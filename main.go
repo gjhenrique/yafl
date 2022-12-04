@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+
 	toml "github.com/pelletier/go-toml/v2"
 
-	"github.com/spf13/cobra"
+	"github.com/gjhenrique/lfzf/cmd"
 
 	"io"
 	"os"
@@ -48,7 +49,6 @@ func fzf(input []byte) (string, error) {
 	ownExe, err := os.Executable()
 	bind := fmt.Sprintf("change:reload:sleep 0.1; %s search {q} || true", ownExe)
 	cmd := exec.Command("fzf", "--ansi", "--sort", "--extended", "--no-multi", "--cycle", "--no-info", "--bind", bind)
-	fmt.Println(cmd.Args)
 	cmd.Stdout = &result
 	cmd.Stderr = os.Stderr
 
@@ -159,11 +159,12 @@ func findModes(configFile string) ([]*Mode, error) {
 }
 
 func main() {
-	if len(os.Args[1:]) > 0 {
-		fmt.Println("d\ne")
-	} else {
-		fzf([]byte("a\nb"))
-	}
+	// if len(os.Args[1:]) > 0 {
+	// 	fmt.Println("d\ne")
+	// } else {
+	// 	fzf([]byte("a\nb"))
+	// }
+	cmd.Execute()
 	// entries, err := GetDesktopEntries()
 
 	// if err != nil {
