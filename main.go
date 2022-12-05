@@ -2,21 +2,18 @@ package main
 
 import (
 	"bytes"
+	"code.rocketnine.space/tslocum/desktop"
 	"errors"
 	"fmt"
-
+	// "github.com/gjhenrique/lfzf/cmd"
 	toml "github.com/pelletier/go-toml/v2"
-
-	"github.com/gjhenrique/lfzf/cmd"
-
 	"io"
 	"os"
 	"os/exec"
-
+	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
-
-	"code.rocketnine.space/tslocum/desktop"
 )
 
 type DesktopEntry struct {
@@ -43,12 +40,10 @@ func GetDesktopEntries() ([]*desktop.Entry, error) {
 	return allEntries, nil
 }
 
-func fzf(input []byte) (string, error) {
+func commandWithOutput(command []string, input []byte) (string, error) {
 	var result strings.Builder
 
-	ownExe, err := os.Executable()
-	bind := fmt.Sprintf("change:reload:sleep 0.1; %s search {q} || true", ownExe)
-	cmd := exec.Command("fzf", "--ansi", "--sort", "--extended", "--no-multi", "--cycle", "--no-info", "--bind", bind)
+	cmd := exec.Command(command[0], command[1:]...)
 	cmd.Stdout = &result
 	cmd.Stderr = os.Stderr
 
@@ -66,8 +61,18 @@ func fzf(input []byte) (string, error) {
 	return result.String(), err
 }
 
-func applicationName(entry *desktop.Entry) string {
+func fzf(input []byte) (string, error) {
+	ownExe, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	bind := fmt.Sprintf("change:reload:sleep 0.05; %s search {q} || true", ownExe)
+	command := []string{"fzf", "--ansi", "--sort", "--extended", "--no-multi", "--cycle", "--no-info", "--bind", bind}
 
+	return commandWithOutput(command, input)
+}
+
+func applicationName(entry *desktop.Entry) string {
 	generic := ""
 
 	if entry.GenericName != "" {
@@ -79,9 +84,9 @@ func applicationName(entry *desktop.Entry) string {
 }
 
 func launchApplication(execString string) error {
-	execString2 := strings.Fields(execString)
+	execList := strings.Fields(execString)
 
-	cmd := exec.Command(execString2[0], execString2[1:]...)
+	cmd := exec.Command(execList[0], execList[1:]...)
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setsid: true,
@@ -129,25 +134,23 @@ type Mode struct {
 	Cache  int
 	Exec   string
 	Prefix string
-	Name   string
 	Key    string
 }
 
 func findModes(configFile string) ([]*Mode, error) {
 	modes := make([]*Mode, 0)
 
-	dat, err := os.ReadFile(configFile)
+	fileData, err := os.ReadFile(configFile)
 	if err != nil {
 		return modes, err
 	}
 
 	cfg := make(map[string]map[string]Mode)
 
-	err = toml.Unmarshal(dat, &cfg)
+	err = toml.Unmarshal(fileData, &cfg)
 	if err != nil {
 		return modes, err
 	}
-	fmt.Println(err)
 
 	for k := range cfg["modes"] {
 		mode := cfg["modes"][k]
@@ -155,16 +158,124 @@ func findModes(configFile string) ([]*Mode, error) {
 		modes = append(modes, &mode)
 	}
 
+	var appMode *Mode
+	for _, m := range modes {
+		if m.Key == "apps" {
+			appMode = m
+		}
+	}
+
+	bin, err := os.Executable()
+	if err != nil {
+		return modes, err
+	}
+
+	if appMode == nil {
+		appMode = &Mode{
+			Cache: 30,
+			Exec:  fmt.Sprintf("%s apps search", bin),
+			Key:   "apps",
+		}
+		modes = append(modes, appMode)
+	} else {
+		if appMode.Exec != "" {
+			appMode.Exec = fmt.Sprintf("%s apps search", bin)
+		}
+	}
+
 	return modes, nil
+}
+
+func configFolder() string {
+	if runtime.GOOS == "windows" {
+		return os.Getenv("APPDATA")
+	} else if os.Getenv("XDG_CONFIG_HOME") != "" {
+		return os.Getenv("XDG_CONFIG_HOME")
+	} else if runtime.GOOS == "darwin" {
+		return filepath.Join(os.Getenv("HOME"), "Library", "Application Support")
+	} else {
+		return filepath.Join(os.Getenv("HOME"), ".config")
+	}
+}
+
+const APP_NAME = "lfzf"
+
+func appFolder() string {
+	configFolder := configFolder()
+	appFolder := filepath.Join(configFolder, APP_NAME)
+
+	err := os.MkdirAll(appFolder, 0755)
+
+	if err != nil {
+		panic("Error when creating database folder" + err.Error())
+	}
+
+	return appFolder
+}
+
+func (m *Mode) List() error {
+	cmd := strings.Split(m.Exec, " ")
+	result, err := commandWithOutput(cmd, nil)
+	if err != nil {
+		return err
+	}
+
+	os.Stdout.Write([]byte(result))
+
+	return nil
+}
+
+func (m *Mode) Launch(input string) error {
+	cmd := strings.Split(m.Exec, " ")
+
+	input = strings.TrimPrefix(input, m.Prefix)
+	cmd = append(cmd, input)
+	_, err := commandWithOutput(cmd, []byte(input))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func FindMode(input string, modes []*Mode) *Mode {
+	var mode *Mode
+
+	for _, m := range modes {
+		if m.Prefix == "" {
+			continue
+		}
+
+		if strings.HasPrefix(input, m.Prefix) {
+			mode = m
+		}
+	}
+
+	if mode == nil {
+		for _, m := range modes {
+			if m.Key == "apps" {
+				mode = m
+			}
+		}
+	}
+
+	return mode
 }
 
 func main() {
 	// if len(os.Args[1:]) > 0 {
-	// 	fmt.Println("d\ne")
+	// 	fmt.Println(modes[0])
 	// } else {
 	// 	fzf([]byte("a\nb"))
 	// }
-	cmd.Execute()
+
+	// modes, _ := findModes(filepath.Join(appFolder(), "config.toml"))
+	// mode := FindMode("f ola", modes)
+	// mode.Launch("f ola ola ola")
+
+	// cmd.Execute()
+
+	// appFolder()
 	// entries, err := GetDesktopEntries()
 
 	// if err != nil {
