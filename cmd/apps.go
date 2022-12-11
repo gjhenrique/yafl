@@ -24,7 +24,7 @@ func runApps(cmd *cobra.Command, args []string) {
 			panic(err)
 		}
 
-		err = sh.CommandDeattached(entry.Exec)
+		err = sh.SpawnAsyncProcess(entry.Exec)
 		if err != nil {
 			panic(err)
 		}

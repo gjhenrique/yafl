@@ -59,13 +59,13 @@ func AllModes(configFile string) ([]*Mode, error) {
 	if appMode == nil {
 		appMode = &Mode{
 			Cache: 30,
-			Exec:  fmt.Sprintf("%s apps search", bin),
+			Exec:  fmt.Sprintf("%s apps", bin),
 			Key:   "apps",
 		}
 		modes = append(modes, appMode)
 	} else {
 		if appMode.Exec != "" {
-			appMode.Exec = fmt.Sprintf("%s apps search", bin)
+			appMode.Exec = fmt.Sprintf("%s apps", bin)
 		}
 	}
 
@@ -74,7 +74,7 @@ func AllModes(configFile string) ([]*Mode, error) {
 
 func (m *Mode) ListEntries() error {
 	cmd := strings.Fields(m.Exec)
-	result, err := sh.CommandWithOutput(cmd, nil)
+	result, err := sh.SpawnSyncProcess(cmd, nil)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (m *Mode) Launch(input string) error {
 	input = strings.TrimPrefix(input, m.Prefix)
 	cmd = append(cmd, input)
 
-	err := sh.CommandDeattached(strings.Join(cmd, " "))
+	err := sh.SpawnAsyncProcess(strings.Join(cmd, " "))
 	if err != nil {
 		return err
 	}
@@ -112,11 +112,7 @@ func FindMode(input string, modes []*Mode) *Mode {
 	}
 
 	if mode == nil {
-		for _, m := range modes {
-			if m.Key == "apps" {
-				mode = m
-			}
-		}
+		mode = AppMode(modes)
 	}
 
 	return mode

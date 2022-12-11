@@ -1,10 +1,12 @@
 package apps
 
 import (
-	"code.rocketnine.space/tslocum/desktop"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
+
+	"code.rocketnine.space/tslocum/desktop"
 )
 
 type DesktopEntry struct {
@@ -24,6 +26,10 @@ func getDesktopEntries() ([]*desktop.Entry, error) {
 
 	for _, dir := range entries {
 		for _, entry := range dir {
+			// Getting the regex from rofi
+			r := regexp.MustCompile(`%[fFuU]`)
+			entry.Exec = r.ReplaceAllString(entry.Exec, "")
+
 			allEntries = append(allEntries, entry)
 		}
 	}

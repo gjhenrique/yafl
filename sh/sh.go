@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func CommandDeattached(command string) error {
+func SpawnAsyncProcess(command string) error {
 	execList := strings.Fields(command)
 
 	cmd := exec.Command(execList[0], execList[1:]...)
@@ -19,7 +19,7 @@ func CommandDeattached(command string) error {
 	return err
 }
 
-func CommandWithOutput(command []string, input []byte) (string, error) {
+func SpawnSyncProcess(command []string, input []byte) (string, error) {
 	var result strings.Builder
 
 	cmd := exec.Command(command[0], command[1:]...)
@@ -48,5 +48,5 @@ func Fzf(input []byte) (string, error) {
 	bind := fmt.Sprintf("change:reload:sleep 0.05; %s search {q} || true", ownExe)
 	command := []string{"fzf", "--ansi", "--sort", "--extended", "--no-multi", "--cycle", "--no-info", "--bind", bind}
 
-	return CommandWithOutput(command, input)
+	return SpawnSyncProcess(command, input)
 }
