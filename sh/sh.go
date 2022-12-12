@@ -16,10 +16,10 @@ type Entry struct {
 	Text    string
 }
 
-func SpawnAsyncProcess(command string) error {
-	execList := strings.Fields(command)
+func SpawnAsyncProcess(command []string, args string) error {
+	args2 := append(command[1:], args)
 
-	cmd := exec.Command(execList[0], execList[1:]...)
+	cmd := exec.Command(command[0], args2...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setsid: true,
 	}
@@ -82,19 +82,21 @@ func Fzf(entries []Entry) (*Entry, error) {
 		"--no-multi",
 		"--cycle",
 		"--no-info",
+		"--print-query",
 		"--bind",
 		bind,
 	}
-
-	fmt.Println(command)
 
 	result, err := SpawnSyncProcess(command, []byte(FormatEntries(entries)))
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: Make \034 a delimiter
-	separatedEntry := strings.Split(result, "\034")
+	splittedResult := strings.Split(result, "\n")
+	// query := splittedResult[0]
+
+	// TODO: Make \034 a variable
+	separatedEntry := strings.Split(splittedResult[1], "\034")
 	if len(separatedEntry) != 3 {
 		return nil, fmt.Errorf("Result %s not compatible with delimiters", result)
 	}

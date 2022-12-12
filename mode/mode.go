@@ -94,12 +94,7 @@ func (m *Mode) ListEntries() ([]sh.Entry, error) {
 func (m *Mode) Launch(input string) error {
 	cmd := strings.Fields(m.Exec)
 
-	input = strings.TrimPrefix(input, m.Prefix)
-	cmd = append(cmd, input)
-
-	err := sh.SpawnAsyncProcess(strings.Join(cmd, " "))
-	// TODO: Remove this back to async process
-	// _, err := sh.SpawnSyncProcess(cmd, nil)
+	err := sh.SpawnAsyncProcess(cmd, input)
 	if err != nil {
 		return err
 	}
