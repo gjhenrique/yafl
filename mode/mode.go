@@ -97,9 +97,9 @@ func (m *Mode) Launch(input string) error {
 	input = strings.TrimPrefix(input, m.Prefix)
 	cmd = append(cmd, input)
 
-	// err := sh.SpawnAsyncProcess(strings.Join(cmd, " "))
+	err := sh.SpawnAsyncProcess(strings.Join(cmd, " "))
 	// TODO: Remove this back to async process
-	_, err := sh.SpawnSyncProcess(cmd, nil)
+	// _, err := sh.SpawnSyncProcess(cmd, nil)
 	if err != nil {
 		return err
 	}

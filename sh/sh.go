@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 )
 
 type Entry struct {
@@ -19,6 +20,9 @@ func SpawnAsyncProcess(command string) error {
 	execList := strings.Fields(command)
 
 	cmd := exec.Command(execList[0], execList[1:]...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setsid: true,
+	}
 
 	err := cmd.Start()
 
@@ -65,11 +69,15 @@ func Fzf(entries []Entry) (*Entry, error) {
 	bind := fmt.Sprintf("change:reload:%s search {q} || true", ownExe)
 	command := []string{
 		"fzf",
+		"--no-info",
 		"--nth=..3",
 		"--with-nth=3",
 		"--delimiter=\034",
+		"--color=16,gutter:-1",
+		"--margin=1,2",
 		"--no-sort",
 		"--ansi",
+		"--header=",
 		"--extended",
 		"--no-multi",
 		"--cycle",
@@ -77,6 +85,8 @@ func Fzf(entries []Entry) (*Entry, error) {
 		"--bind",
 		bind,
 	}
+
+	fmt.Println(command)
 
 	result, err := SpawnSyncProcess(command, []byte(FormatEntries(entries)))
 	if err != nil {
