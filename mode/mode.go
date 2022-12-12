@@ -126,7 +126,7 @@ func FindModeByInput(modes []*Mode, input string) *Mode {
 			continue
 		}
 
-		if strings.HasPrefix(input, m.Prefix) {
+		if strings.HasPrefix(input, m.Prefix+" ") {
 			mode = m
 		}
 	}
