@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 	"strings"
 
 	"github.com/gjhenrique/lfzf/mode"
+	"github.com/gjhenrique/lfzf/sh"
 
 	"github.com/spf13/cobra"
 )
@@ -25,15 +26,16 @@ func search(cmd *cobra.Command, args []string) {
 
 	modes, err := mode.AllModes(configFile())
 	if err != nil {
-		fmt.Println(err)
 		panic(err)
 	}
 
-	fmt.Println(modes)
-	selectedMode := mode.FindMode(query, modes)
-	err = selectedMode.ListEntries()
+	selectedMode := mode.FindModeByInput(modes, query)
+	entries, err := selectedMode.ListEntries()
+
+	s := sh.FormatEntries(entries)
+	os.Stdout.Write([]byte(s))
+
 	if err != nil {
-		fmt.Println(err)
 		panic(err)
 	}
 }

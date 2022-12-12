@@ -9,6 +9,12 @@ import (
 	"strings"
 )
 
+type Entry struct {
+	ModeKey string
+	Id      string
+	Text    string
+}
+
 func SpawnAsyncProcess(command string) error {
 	execList := strings.Fields(command)
 
@@ -40,13 +46,47 @@ func SpawnSyncProcess(command []string, input []byte) (string, error) {
 	return result.String(), err
 }
 
-func Fzf(input []byte) (string, error) {
+func FormatEntries(entries []Entry) string {
+	var sb strings.Builder
+
+	for _, e := range entries {
+		s := fmt.Sprintf("%s\034%s\034%s\n", e.ModeKey, e.Id, e.Text)
+		sb.WriteString(s)
+	}
+
+	return sb.String()
+}
+
+func Fzf(entries []Entry) (*Entry, error) {
 	ownExe, err := os.Executable()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	bind := fmt.Sprintf("change:reload:sleep 0.05; %s search {q} || true", ownExe)
-	command := []string{"fzf", "--ansi", "--sort", "--extended", "--no-multi", "--cycle", "--no-info", "--bind", bind}
+	bind := fmt.Sprintf("change:reload:%s search {q} || true", ownExe)
+	command := []string{
+		"fzf",
+		"--nth=..3",
+		"--with-nth=3",
+		"--delimiter=\034",
+		"--no-sort",
+		"--ansi",
+		"--extended",
+		"--no-multi",
+		"--cycle",
+		"--no-info",
+		"--bind",
+		bind,
+	}
 
-	return SpawnSyncProcess(command, input)
+	result, err := SpawnSyncProcess(command, []byte(FormatEntries(entries)))
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Make \034 a delimiter
+	separatedEntry := strings.Split(result, "\034")
+	if len(separatedEntry) != 3 {
+		return nil, fmt.Errorf("Result %s not compatible with delimiters", result)
+	}
+	return &Entry{ModeKey: separatedEntry[0], Id: separatedEntry[1], Text: separatedEntry[2]}, nil
 }

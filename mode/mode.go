@@ -72,16 +72,23 @@ func AllModes(configFile string) ([]*Mode, error) {
 	return modes, nil
 }
 
-func (m *Mode) ListEntries() error {
+func (m *Mode) ListEntries() ([]sh.Entry, error) {
 	cmd := strings.Fields(m.Exec)
 	result, err := sh.SpawnSyncProcess(cmd, nil)
-	if err != nil {
-		return err
+
+	entriesFromCmd := strings.Split(result, "\n")
+
+	entries := make([]sh.Entry, len(entriesFromCmd))
+
+	for i, r := range entriesFromCmd {
+		entries[i] = sh.Entry{ModeKey: m.Key, Text: r, Id: r}
 	}
 
-	os.Stdout.Write([]byte(result))
+	if err != nil {
+		return nil, err
+	}
 
-	return nil
+	return entries, nil
 }
 
 func (m *Mode) Launch(input string) error {
@@ -90,7 +97,9 @@ func (m *Mode) Launch(input string) error {
 	input = strings.TrimPrefix(input, m.Prefix)
 	cmd = append(cmd, input)
 
-	err := sh.SpawnAsyncProcess(strings.Join(cmd, " "))
+	// err := sh.SpawnAsyncProcess(strings.Join(cmd, " "))
+	// TODO: Remove this back to async process
+	_, err := sh.SpawnSyncProcess(cmd, nil)
 	if err != nil {
 		return err
 	}
@@ -98,7 +107,23 @@ func (m *Mode) Launch(input string) error {
 	return nil
 }
 
-func FindMode(input string, modes []*Mode) *Mode {
+func FindModeByKey(modes []*Mode, key string) (*Mode, error) {
+	var mode *Mode
+
+	for _, m := range modes {
+		if m.Key == key {
+			mode = m
+		}
+	}
+
+	if mode == nil {
+		return nil, fmt.Errorf("Mode %s not found", key)
+	}
+
+	return mode, nil
+}
+
+func FindModeByInput(modes []*Mode, input string) *Mode {
 	var mode *Mode
 
 	for _, m := range modes {

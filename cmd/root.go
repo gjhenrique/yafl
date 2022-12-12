@@ -1,29 +1,47 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/gjhenrique/lfzf/mode"
+	"github.com/gjhenrique/lfzf/sh"
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "lfzf",
 	Short: "Launcher using fzf with modes",
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	Run: runRoot,
+	Run:   runRoot,
 }
 
 func runRoot(cmd *cobra.Command, args []string) {
-	fmt.Println("Root cmd")
-	// Get the apps mode
-	// Execute the apps mode and pipe the return to fzf
+	modes, err := mode.AllModes(configFile())
+	if err != nil {
+		panic(err)
+	}
+
+	selectedMode := mode.FindModeByInput(modes, "")
+	entries, err := selectedMode.ListEntries()
+	if err != nil {
+		panic(err)
+	}
+
+	entry, err := sh.Fzf(entries)
+	if err != nil {
+		panic(err)
+	}
+
+	mode, err := mode.FindModeByKey(modes, entry.ModeKey)
+	if err != nil {
+		panic(err)
+	}
+
+	err = mode.Launch(entry.Id)
+	if err != nil {
+		panic(err)
+	}
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	rootCmd.AddCommand(appCmd)
 	rootCmd.AddCommand(searchCmd)
@@ -35,13 +53,5 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/lfzf/config.toml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

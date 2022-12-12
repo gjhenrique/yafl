@@ -78,7 +78,7 @@ func GetEntryFromName(chosenApp string) (*desktop.Entry, error) {
 	var entry *desktop.Entry
 
 	for _, e := range entries {
-		if applicationName(e) == chosenApp {
+		if strings.TrimSpace(applicationName(e)) == strings.TrimSpace(chosenApp) {
 			entry = e
 		}
 	}
