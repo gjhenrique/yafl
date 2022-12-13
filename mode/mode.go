@@ -81,7 +81,12 @@ func (m *Mode) ListEntries() ([]sh.Entry, error) {
 	entries := make([]sh.Entry, len(entriesFromCmd))
 
 	for i, r := range entriesFromCmd {
-		entries[i] = sh.Entry{ModeKey: m.Key, Text: r, Id: r}
+		text := r
+
+		if m.Prefix != "" {
+			text = m.Prefix + " " + r
+		}
+		entries[i] = sh.Entry{ModeKey: m.Key, Text: text, Id: r}
 	}
 
 	if err != nil {
