@@ -38,7 +38,6 @@ func runRoot(cmd *cobra.Command, args []string) {
 	entry, err := sh.Fzf(entries)
 	if err != nil {
 		if _, ok := err.(*sh.SkippedInputError); ok {
-			fmt.Println("User skipped")
 			os.Exit(0)
 		}
 
