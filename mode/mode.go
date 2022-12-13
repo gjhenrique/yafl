@@ -10,10 +10,11 @@ import (
 )
 
 type Mode struct {
-	Cache  int
-	Exec   string
-	Prefix string
-	Key    string
+	Cache            int
+	Exec             string
+	Prefix           string
+	Key              string
+	CallWithoutMatch bool `toml:"call_without_match"`
 }
 
 func AppMode(modes []*Mode) *Mode {
@@ -46,6 +47,15 @@ func AllModes(configFile string) ([]*Mode, error) {
 	for k := range cfg["modes"] {
 		mode := cfg["modes"][k]
 		mode.Key = k
+
+		// Transforming f into f<space>
+		// When there is a space, we don't touch it
+		if mode.Prefix != "" {
+			if !strings.HasSuffix(mode.Prefix, " ") {
+				mode.Prefix = mode.Prefix + " "
+			}
+		}
+
 		modes = append(modes, &mode)
 	}
 
@@ -84,7 +94,7 @@ func (m *Mode) ListEntries() ([]sh.Entry, error) {
 		text := r
 
 		if m.Prefix != "" {
-			text = m.Prefix + " " + r
+			text = m.Prefix + r
 		}
 		entries[i] = sh.Entry{ModeKey: m.Key, Text: text, Id: r}
 	}
@@ -131,7 +141,7 @@ func FindModeByInput(modes []*Mode, input string) *Mode {
 			continue
 		}
 
-		if strings.HasPrefix(input, m.Prefix+" ") {
+		if strings.HasPrefix(input, m.Prefix) {
 			mode = m
 		}
 	}

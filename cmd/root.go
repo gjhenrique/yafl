@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/gjhenrique/lfzf/mode"
 	"github.com/gjhenrique/lfzf/sh"
@@ -12,6 +14,13 @@ var rootCmd = &cobra.Command{
 	Use:   "lfzf",
 	Short: "Launcher using fzf with modes",
 	Run:   runRoot,
+}
+
+func launchCommand(mode *mode.Mode, input string) {
+	err := mode.Launch(input)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func runRoot(cmd *cobra.Command, args []string) {
@@ -28,6 +37,20 @@ func runRoot(cmd *cobra.Command, args []string) {
 
 	entry, err := sh.Fzf(entries)
 	if err != nil {
+		if _, ok := err.(*sh.SkippedInputError); ok {
+			fmt.Println("User skipped")
+			os.Exit(0)
+		}
+
+		if noMatchErr, ok := err.(*sh.NoMatchError); ok {
+			mode := mode.FindModeByInput(modes, noMatchErr.Query)
+			if mode.CallWithoutMatch {
+				fmt.Println(noMatchErr.Query)
+				query := strings.TrimPrefix(noMatchErr.Query, mode.Prefix)
+				launchCommand(mode, query)
+				os.Exit(0)
+			}
+		}
 		panic(err)
 	}
 
@@ -36,10 +59,7 @@ func runRoot(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 
-	err = mode.Launch(entry.Id)
-	if err != nil {
-		panic(err)
-	}
+	launchCommand(mode, entry.Id)
 }
 
 func Execute() {

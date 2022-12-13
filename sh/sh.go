@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"syscall"
 )
 
 type Entry struct {
@@ -16,10 +15,10 @@ type Entry struct {
 	Text    string
 }
 
-func SpawnAsyncProcess(command []string, args string) error {
-	args2 := append(command[1:], args)
+func SpawnAsyncProcess(command []string, options string) error {
+	args := append(command[1:], options)
 
-	cmd := exec.Command(command[0], args2...)
+	cmd := exec.Command(command[0], args...)
 
 	err := cmd.Start()
 
@@ -58,6 +57,20 @@ func FormatEntries(entries []Entry) string {
 	return sb.String()
 }
 
+type NoMatchError struct {
+	Query string
+}
+
+func (e *NoMatchError) Error() string {
+	return fmt.Sprintf("Query %s not found", e.Query)
+}
+
+type SkippedInputError struct{}
+
+func (e *SkippedInputError) Error() string {
+	return "User selected nothing"
+}
+
 func Fzf(entries []Entry) (*Entry, error) {
 	ownExe, err := os.Executable()
 	if err != nil {
@@ -87,27 +100,30 @@ func Fzf(entries []Entry) (*Entry, error) {
 
 	result, err := SpawnSyncProcess(command, []byte(FormatEntries(entries)))
 
-	// https://www.mankier.com/1/fzf#Exit_Status
-	if exitError, ok := err.(*exec.ExitError); ok {
-		// No
-		if exitError.ExitCode() == 1 {
-			return nil, nil
-		}
-	} else {
-		return nil, err
-	}
+	splittedResult := strings.Split(result, "\n")
+	query := splittedResult[0]
 
 	if err != nil {
-		return nil, err
+		// https://www.mankier.com/1/fzf#Exit_Status
+		if exitError, ok := err.(*exec.ExitError); ok {
+			// TODO: Return no match error
+			// TODO: Treat 130 case - User pressed key
+			if exitError.ExitCode() == 1 {
+				// TODO: Handle this
+
+				return nil, &NoMatchError{Query: query}
+			} else if exitError.ExitCode() == 130 {
+				return nil, &SkippedInputError{}
+			} else {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
 	}
 
-	splittedResult := strings.Split(result, "\n")
-	// query := splittedResult[0]
-	fmt.Println(splittedResult[0])
-	fmt.Println(splittedResult[1])
-	fmt.Println("vsf")
-
 	// TODO: Make \034 a variable
+	// Use same delimiter from rofi
 	separatedEntry := strings.Split(splittedResult[1], "\034")
 	if len(separatedEntry) != 3 {
 		return nil, fmt.Errorf("Result %s not compatible with delimiters", result)
