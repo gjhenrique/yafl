@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 )
 
 type Entry struct {
@@ -19,6 +20,10 @@ func SpawnAsyncProcess(command []string, options string) error {
 	args := append(command[1:], options)
 
 	cmd := exec.Command(command[0], args...)
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setsid: true,
+	}
 
 	err := cmd.Start()
 
