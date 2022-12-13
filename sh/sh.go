@@ -20,9 +20,6 @@ func SpawnAsyncProcess(command []string, args string) error {
 	args2 := append(command[1:], args)
 
 	cmd := exec.Command(command[0], args2...)
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setsid: true,
-	}
 
 	err := cmd.Start()
 
@@ -69,6 +66,7 @@ func Fzf(entries []Entry) (*Entry, error) {
 	bind := fmt.Sprintf("change:reload:%s search {q} || true", ownExe)
 	command := []string{
 		"fzf",
+		"--exact",
 		"--no-info",
 		"--nth=..3",
 		"--with-nth=3",
@@ -88,12 +86,26 @@ func Fzf(entries []Entry) (*Entry, error) {
 	}
 
 	result, err := SpawnSyncProcess(command, []byte(FormatEntries(entries)))
+
+	// https://www.mankier.com/1/fzf#Exit_Status
+	if exitError, ok := err.(*exec.ExitError); ok {
+		// No
+		if exitError.ExitCode() == 1 {
+			return nil, nil
+		}
+	} else {
+		return nil, err
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
 	splittedResult := strings.Split(result, "\n")
 	// query := splittedResult[0]
+	fmt.Println(splittedResult[0])
+	fmt.Println(splittedResult[1])
+	fmt.Println("vsf")
 
 	// TODO: Make \034 a variable
 	separatedEntry := strings.Split(splittedResult[1], "\034")
