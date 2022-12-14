@@ -91,12 +91,20 @@ func (m *Mode) ListEntries() ([]sh.Entry, error) {
 	entries := make([]sh.Entry, len(entriesFromCmd))
 
 	for i, r := range entriesFromCmd {
+		splittedEntry := strings.Split(r, "\\x31")
+
 		text := r
+		id := text
+		if len(splittedEntry) > 1 {
+			id = splittedEntry[0]
+			text = strings.Join(splittedEntry[1:], " ")
+		}
 
 		if m.Prefix != "" {
-			text = m.Prefix + r
+			text = m.Prefix + text
 		}
-		entries[i] = sh.Entry{ModeKey: m.Key, Text: text, Id: r}
+
+		entries[i] = sh.Entry{ModeKey: m.Key, Text: text, Id: id}
 	}
 
 	if err != nil {

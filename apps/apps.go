@@ -3,7 +3,6 @@ package apps
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"code.rocketnine.space/tslocum/desktop"
@@ -26,10 +25,7 @@ func getDesktopEntries() ([]*desktop.Entry, error) {
 
 	for _, dir := range entries {
 		for _, entry := range dir {
-			// Getting the regex from rofi
-			r := regexp.MustCompile(`%[fFuU]`)
-			entry.Exec = r.ReplaceAllString(entry.Exec, "")
-
+			entry.Exec = entry.ExpandExec("")
 			allEntries = append(allEntries, entry)
 		}
 	}
@@ -52,11 +48,10 @@ func applicationNames(entries []*desktop.Entry) string {
 	names := make([]string, len(entries))
 
 	for i, entry := range entries {
-		names[i] = applicationName(entry)
+		names[i] = fmt.Sprintf("%s\\x31%s", entry.Name, applicationName(entry))
 	}
 
 	return strings.Join(names, "\n")
-
 }
 
 func FormattedApplicationNames() (string, error) {
@@ -78,7 +73,7 @@ func GetEntryFromName(chosenApp string) (*desktop.Entry, error) {
 	var entry *desktop.Entry
 
 	for _, e := range entries {
-		if strings.TrimSpace(applicationName(e)) == strings.TrimSpace(chosenApp) {
+		if e.Name == strings.TrimSpace(chosenApp) {
 			entry = e
 		}
 	}
