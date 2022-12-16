@@ -13,6 +13,10 @@ type DesktopEntry struct {
 	Exec string
 }
 
+var (
+	applicationIcon = ""
+)
+
 func getDesktopEntries() ([]*desktop.Entry, error) {
 	allEntries := make([]*desktop.Entry, 0, 100)
 
@@ -48,7 +52,7 @@ func applicationNames(entries []*desktop.Entry) string {
 	names := make([]string, len(entries))
 
 	for i, entry := range entries {
-		names[i] = fmt.Sprintf("%s\\x31%s", entry.Name, applicationName(entry))
+		names[i] = fmt.Sprintf("%s\\x31%s %s", entry.Name, applicationIcon, applicationName(entry))
 	}
 
 	return strings.Join(names, "\n")
