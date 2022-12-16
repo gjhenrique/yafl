@@ -68,7 +68,7 @@ func AllModes(configFile string) ([]*Mode, error) {
 
 	if appMode == nil {
 		appMode = &Mode{
-			Cache: 30,
+			Cache: 60,
 			Exec:  fmt.Sprintf("%s apps", bin),
 			Key:   "apps",
 		}

@@ -24,10 +24,10 @@ func appFolder() string {
 	configFolder := configFolder()
 	appFolder := filepath.Join(configFolder, APP_NAME)
 
-	err := os.MkdirAll(appFolder, 0755)
-
-	if err != nil {
-		panic("Error when creating database folder" + err.Error())
+	if _, err := os.Stat(appFolder); os.IsNotExist(err) {
+		if err := os.MkdirAll(appFolder, 0755); err != nil {
+			panic("Error when creating cache folder" + err.Error())
+		}
 	}
 
 	return appFolder
@@ -35,6 +35,20 @@ func appFolder() string {
 
 func configFile() string {
 	return filepath.Join(appFolder(), "config.toml")
+}
+
+func cacheFolder() string {
+	// Only Linux related. Complete with other directories whenever it's supported
+	systemCacheFolder := filepath.Join(os.Getenv("HOME"), ".cache")
+	appCacheFolder := filepath.Join(systemCacheFolder, APP_NAME)
+
+	if _, err := os.Stat(appCacheFolder); os.IsNotExist(err) {
+		if err := os.MkdirAll(appCacheFolder, 0755); err != nil {
+			panic("Error when creating cache folder" + err.Error())
+		}
+	}
+
+	return appCacheFolder
 }
 
 var cfgFile string

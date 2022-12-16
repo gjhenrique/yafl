@@ -64,6 +64,7 @@ func runRoot(cmd *cobra.Command, args []string) {
 func Execute() {
 	rootCmd.AddCommand(appCmd)
 	rootCmd.AddCommand(searchCmd)
+	rootCmd.AddCommand(cacheCmd)
 
 	err := rootCmd.Execute()
 	if err != nil {
