@@ -5,14 +5,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gjhenrique/lfzf/cache"
-	"github.com/gjhenrique/lfzf/mode"
-	"github.com/gjhenrique/lfzf/sh"
+	"github.com/gjhenrique/yafl/cache"
+	"github.com/gjhenrique/yafl/mode"
+	"github.com/gjhenrique/yafl/sh"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "lfzf",
+	Use:   "yafl",
 	Short: "Launcher using fzf with modes",
 	Run:   runRoot,
 }
@@ -75,5 +75,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/lfzf/config.toml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/yafl/config.toml)")
 }

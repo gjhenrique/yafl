@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/gjhenrique/lfzf/cmd"
+	"github.com/gjhenrique/yafl/cmd"
 )
 
 func main() {

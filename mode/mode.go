@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gjhenrique/lfzf/cache"
-	sh "github.com/gjhenrique/lfzf/sh"
+	"github.com/gjhenrique/yafl/cache"
+	sh "github.com/gjhenrique/yafl/sh"
 	toml "github.com/pelletier/go-toml/v2"
 )
 

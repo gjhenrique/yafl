@@ -6,7 +6,7 @@ import (
 	"runtime"
 )
 
-const APP_NAME = "lfzf"
+const APP_NAME = "yafl"
 
 func configFolder() string {
 	if runtime.GOOS == "windows" {

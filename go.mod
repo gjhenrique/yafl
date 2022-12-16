@@ -1,4 +1,4 @@
-module github.com/gjhenrique/lfzf
+module github.com/gjhenrique/yafl
 
 go 1.18
 

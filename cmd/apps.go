@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gjhenrique/lfzf/apps"
-	"github.com/gjhenrique/lfzf/sh"
+	"github.com/gjhenrique/yafl/apps"
+	"github.com/gjhenrique/yafl/sh"
 
 	"github.com/spf13/cobra"
 )

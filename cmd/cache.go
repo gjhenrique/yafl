@@ -4,7 +4,7 @@ import (
 	// "fmt"
 	"strings"
 
-	"github.com/gjhenrique/lfzf/cache"
+	"github.com/gjhenrique/yafl/cache"
 
 	"github.com/spf13/cobra"
 )

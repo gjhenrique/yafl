@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gjhenrique/lfzf/cache"
-	"github.com/gjhenrique/lfzf/mode"
-	"github.com/gjhenrique/lfzf/sh"
+	"github.com/gjhenrique/yafl/cache"
+	"github.com/gjhenrique/yafl/mode"
+	"github.com/gjhenrique/yafl/sh"
 
 	"github.com/spf13/cobra"
 )
