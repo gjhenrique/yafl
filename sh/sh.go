@@ -52,7 +52,7 @@ func SpawnSyncProcess(command []string, input []byte) (string, error) {
 	return result.String(), err
 }
 
-func FormatEntries(entries []Entry) string {
+func FormatEntries(entries []*Entry) string {
 	var sb strings.Builder
 
 	for _, e := range entries {
@@ -77,7 +77,7 @@ func (e *SkippedInputError) Error() string {
 	return "User selected nothing"
 }
 
-func Fzf(entries []Entry) (*Entry, error) {
+func Fzf(entries []*Entry) (*Entry, error) {
 	ownExe, err := os.Executable()
 	if err != nil {
 		return nil, err

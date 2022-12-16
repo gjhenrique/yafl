@@ -84,7 +84,7 @@ func AllModes(configFile string) ([]*Mode, error) {
 	return modes, nil
 }
 
-func (m *Mode) ListEntries(cache cache.CacheStore) ([]sh.Entry, error) {
+func (m *Mode) ListEntries(cache cache.CacheStore) ([]*sh.Entry, error) {
 	cmd := strings.Fields(m.Exec)
 
 	duration := m.Cache * time.Now().Second()
@@ -98,7 +98,7 @@ func (m *Mode) ListEntries(cache cache.CacheStore) ([]sh.Entry, error) {
 
 	entriesFromCmd := strings.Split(result, "\n")
 
-	entries := make([]sh.Entry, len(entriesFromCmd))
+	entries := make([]*sh.Entry, len(entriesFromCmd))
 
 	for i, r := range entriesFromCmd {
 		splittedEntry := strings.Split(r, "\\x31")
@@ -114,7 +114,7 @@ func (m *Mode) ListEntries(cache cache.CacheStore) ([]sh.Entry, error) {
 			text = m.Prefix + text
 		}
 
-		entries[i] = sh.Entry{ModeKey: m.Key, Text: text, Id: id}
+		entries[i] = &sh.Entry{ModeKey: m.Key, Text: text, Id: id}
 	}
 
 	if err != nil {
