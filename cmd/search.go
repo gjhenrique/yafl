@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gjhenrique/lfzf/cache"
 	"github.com/gjhenrique/lfzf/mode"
 	"github.com/gjhenrique/lfzf/sh"
 
@@ -30,7 +31,8 @@ func search(cmd *cobra.Command, args []string) {
 	}
 
 	selectedMode := mode.FindModeByInput(modes, query)
-	entries, err := selectedMode.ListEntries()
+	c := cache.CacheStore{Dir: cacheFolder()}
+	entries, err := selectedMode.ListEntries(c)
 	if err != nil {
 		panic(err)
 	}

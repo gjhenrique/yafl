@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gjhenrique/lfzf/cache"
 	"github.com/gjhenrique/lfzf/mode"
 	"github.com/gjhenrique/lfzf/sh"
 	"github.com/spf13/cobra"
@@ -30,7 +31,8 @@ func runRoot(cmd *cobra.Command, args []string) {
 	}
 
 	selectedMode := mode.FindModeByInput(modes, "")
-	entries, err := selectedMode.ListEntries()
+	c := cache.CacheStore{Dir: cacheFolder()}
+	entries, err := selectedMode.ListEntries(c)
 	if err != nil {
 		panic(err)
 	}

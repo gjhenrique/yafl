@@ -42,7 +42,7 @@ func populateCache(f *os.File, duration time.Duration, action func() (string, er
 func (c *CacheStore) FetchCache(key string, duration time.Duration, action func() (string, error)) (string, error) {
 	fileName := filepath.Join(c.Dir, key)
 
-	f, err := os.OpenFile(fileName, os.O_RDWR, 0666)
+	f, err := os.OpenFile(fileName, os.O_RDWR, 0644)
 	defer f.Close()
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -61,7 +61,7 @@ func (c *CacheStore) FetchCache(key string, duration time.Duration, action func(
 
 	tMilli := enc.Uint64(b)
 	cacheT := time.Unix(int64(tMilli/1000), 0)
-	if cacheT.Before(time.Now()) {
+	if cacheT.After(time.Now()) {
 		return populateCache(f, duration, action)
 	}
 

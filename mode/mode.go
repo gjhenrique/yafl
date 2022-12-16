@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/gjhenrique/lfzf/cache"
 	sh "github.com/gjhenrique/lfzf/sh"
 	toml "github.com/pelletier/go-toml/v2"
 )
@@ -82,9 +84,17 @@ func AllModes(configFile string) ([]*Mode, error) {
 	return modes, nil
 }
 
-func (m *Mode) ListEntries() ([]sh.Entry, error) {
+func (m *Mode) ListEntries(cache cache.CacheStore) ([]sh.Entry, error) {
 	cmd := strings.Fields(m.Exec)
-	result, err := sh.SpawnSyncProcess(cmd, nil)
+
+	duration := m.Cache * time.Now().Second()
+
+	result, err := cache.FetchCache(m.Key, time.Duration(duration), func() (string, error) {
+		return sh.SpawnSyncProcess(cmd, nil)
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	entriesFromCmd := strings.Split(result, "\n")
 
