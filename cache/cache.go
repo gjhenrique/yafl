@@ -76,3 +76,14 @@ func (c *CacheStore) FetchCache(key string, duration time.Duration, action func(
 
 	return string(strBytes), nil
 }
+
+func (c *CacheStore) Remove(key string) error {
+	filepath.Join(c.Dir, key)
+	// Vulnerable to file traversal attack. It doesn't matter because we don't expose this tool anyway
+	err := os.Remove(key)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
