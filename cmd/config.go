@@ -22,23 +22,15 @@ func configFolder() string {
 
 func appFolder() string {
 	configFolder := configFolder()
-	appFolder := filepath.Join(configFolder, APP_NAME)
-
-	if _, err := os.Stat(appFolder); os.IsNotExist(err) {
-		if err := os.MkdirAll(appFolder, 0755); err != nil {
-			panic("Error when creating cache folder" + err.Error())
-		}
-	}
-
-	return appFolder
+	return filepath.Join(configFolder, APP_NAME)
 }
 
-func configFile() string {
+func defaultConfigFile() string {
 	return filepath.Join(appFolder(), "config.toml")
 }
 
 func cacheFolder() string {
-	// Only Linux related. Complete with other directories whenever it's supported
+	// TODO: Only Linux related. Complete with other directories whenever it's supported
 	systemCacheFolder := filepath.Join(os.Getenv("HOME"), ".cache")
 	appCacheFolder := filepath.Join(systemCacheFolder, APP_NAME)
 

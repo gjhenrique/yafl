@@ -36,7 +36,8 @@ func AllModes(configFile string) ([]*Mode, error) {
 
 	fileData, err := os.ReadFile(configFile)
 	if err != nil {
-		return modes, err
+		fileData = []byte("")
+		err = nil
 	}
 
 	cfg := make(map[string]map[string]Mode)

@@ -1,9 +1,0 @@
-[modes.bookmark]
-cache = 60
-exec = "/opt/bin/rofi_bookmark"
-prefix = "f"
-name = "Search with bookmark"
-
-[modes.search]
-path = "/opt/bin/rofi_search"
-prefix = "s"

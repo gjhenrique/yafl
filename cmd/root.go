@@ -25,7 +25,7 @@ func launchCommand(mode *mode.Mode, input string) {
 }
 
 func runRoot(cmd *cobra.Command, args []string) {
-	modes, err := mode.AllModes(configFile())
+	modes, err := mode.AllModes(defaultConfigFile())
 	if err != nil {
 		panic(err)
 	}

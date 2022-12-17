@@ -25,7 +25,7 @@ func search(cmd *cobra.Command, args []string) {
 		query = strings.Join(args, " ")
 	}
 
-	modes, err := mode.AllModes(configFile())
+	modes, err := mode.AllModes(defaultConfigFile())
 	if err != nil {
 		panic(err)
 	}
