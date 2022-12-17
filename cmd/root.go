@@ -1,12 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/gjhenrique/yafl/cache"
-	"github.com/gjhenrique/yafl/mode"
+	"github.com/gjhenrique/yafl/launcher"
 	"github.com/gjhenrique/yafl/sh"
 	"github.com/spf13/cobra"
 )
@@ -17,20 +16,20 @@ var rootCmd = &cobra.Command{
 	Run:   runRoot,
 }
 
-func launchCommand(mode *mode.Mode, input string) {
-	err := mode.Launch(input)
+func launchCommand(m *launcher.Mode, input string) {
+	err := m.Launch(input)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func runRoot(cmd *cobra.Command, args []string) {
-	modes, err := mode.AllModes(defaultConfigFile())
+	modes, err := launcher.AllModes(defaultConfigFile())
 	if err != nil {
 		panic(err)
 	}
 
-	selectedMode := mode.FindModeByInput(modes, "")
+	selectedMode := launcher.FindModeByInput(modes, "")
 	c := cache.CacheStore{Dir: cacheFolder()}
 	entries, err := selectedMode.ListEntries(c)
 	if err != nil {
@@ -40,27 +39,26 @@ func runRoot(cmd *cobra.Command, args []string) {
 	entry, err := sh.Fzf(entries)
 	if err != nil {
 		if _, ok := err.(*sh.SkippedInputError); ok {
-			os.Exit(0)
+			os.Exit(1)
 		}
 
 		if noMatchErr, ok := err.(*sh.NoMatchError); ok {
-			mode := mode.FindModeByInput(modes, noMatchErr.Query)
-			if mode.CallWithoutMatch {
-				fmt.Println(noMatchErr.Query)
-				query := strings.TrimPrefix(noMatchErr.Query, mode.Prefix)
-				launchCommand(mode, query)
+			m := launcher.FindModeByInput(modes, noMatchErr.Query)
+			if m.CallWithoutMatch {
+				query := strings.TrimPrefix(noMatchErr.Query, m.Prefix)
+				launchCommand(m, query)
 				os.Exit(0)
 			}
 		}
 		panic(err)
 	}
 
-	mode, err := mode.FindModeByKey(modes, entry.ModeKey)
+	m, err := launcher.FindModeByKey(modes, entry.ModeKey)
 	if err != nil {
 		panic(err)
 	}
 
-	launchCommand(mode, entry.Id)
+	launchCommand(m, entry.Id)
 }
 
 func Execute() {

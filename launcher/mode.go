@@ -1,4 +1,4 @@
-package mode
+package launcher
 
 import (
 	"fmt"
