@@ -18,7 +18,7 @@ func runRoot(cmd *cobra.Command, args []string) {
 
 	entries, err := l.ListEntries("")
 	if err != nil {
-		panic(err)
+		displayError(err)
 	}
 
 	entry, m, err := l.Fzf(entries)
@@ -27,12 +27,12 @@ func runRoot(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		panic(err)
+		displayError(err)
 	}
 
 	err = m.Launch(entry.Id)
 	if err != nil {
-		panic(err)
+		displayError(err)
 	}
 }
 

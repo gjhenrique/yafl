@@ -29,9 +29,9 @@ func runApps(cmd *cobra.Command, args []string) {
 			panic(err)
 		}
 	} else {
-		entries, error := apps.FormattedApplicationNames()
-		if error != nil {
-			panic(error)
+		entries, err := apps.FormattedApplicationNames()
+		if err != nil {
+			panic(err)
 		}
 		fmt.Print(entries)
 	}

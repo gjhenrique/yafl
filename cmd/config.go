@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -25,10 +27,14 @@ func configFolder() string {
 func newLauncher() *launcher.Launcher {
 	l, err := launcher.NewLauncher(defaultConfigFile(), cacheFolder())
 	if err != nil {
-		panic(err)
+		displayError(err)
 	}
 
 	return l
+}
+
+func displayError(err error) {
+	panic(err)
 }
 
 func appFolder() string {

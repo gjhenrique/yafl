@@ -27,7 +27,7 @@ func search(cmd *cobra.Command, args []string) {
 
 	entries, err := l.ListEntries(query)
 	if err != nil {
-		panic(err)
+		displayError(err)
 	}
 
 	s := sh.FormatEntries(entries)
