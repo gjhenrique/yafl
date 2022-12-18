@@ -10,6 +10,10 @@ import (
 	toml "github.com/pelletier/go-toml/v2"
 )
 
+var (
+	defaultCacheTime = 60
+)
+
 type Launcher struct {
 	cache      *cache.CacheStore
 	configFile string
@@ -125,6 +129,10 @@ func allModes(configFile string) ([]*Mode, error) {
 		mode := cfg["modes"][k]
 		mode.Key = k
 
+		if mode.Cache == nil {
+			mode.Cache = &defaultCacheTime
+		}
+
 		// Transforming f into f<space>
 		// When there is a space, we don't touch it
 		if mode.Prefix != "" {
@@ -145,7 +153,7 @@ func allModes(configFile string) ([]*Mode, error) {
 
 	if app == nil {
 		app = &Mode{
-			Cache: 60,
+			Cache: &defaultCacheTime,
 			Exec:  fmt.Sprintf("%s apps", bin),
 			Key:   "apps",
 		}

@@ -9,7 +9,7 @@ import (
 )
 
 type Mode struct {
-	Cache            int
+	Cache            *int
 	Exec             string
 	Prefix           string
 	Key              string
@@ -19,7 +19,7 @@ type Mode struct {
 func (m *Mode) ListEntries(cache *cache.CacheStore) ([]*sh.Entry, error) {
 	cmd := strings.Fields(m.Exec)
 
-	duration := m.Cache * time.Now().Second()
+	duration := *m.Cache * time.Now().Second()
 
 	result, err := cache.FetchCache(m.Key, time.Duration(duration), func() (string, error) {
 		return sh.SpawnSyncProcess(cmd, nil)
