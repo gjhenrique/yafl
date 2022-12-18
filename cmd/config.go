@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/gjhenrique/yafl/launcher"
 )
 
 const APP_NAME = "yafl"
@@ -18,6 +20,15 @@ func configFolder() string {
 	} else {
 		return filepath.Join(os.Getenv("HOME"), ".config")
 	}
+}
+
+func newLauncher() *launcher.Launcher {
+	l, err := launcher.NewLauncher(defaultConfigFile(), cacheFolder())
+	if err != nil {
+		panic(err)
+	}
+
+	return l
 }
 
 func appFolder() string {

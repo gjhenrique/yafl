@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gjhenrique/yafl/cache"
-	"github.com/gjhenrique/yafl/launcher"
 	"github.com/gjhenrique/yafl/sh"
 
 	"github.com/spf13/cobra"
@@ -19,20 +17,15 @@ var searchCmd = &cobra.Command{
 }
 
 func search(cmd *cobra.Command, args []string) {
+	l := newLauncher()
+
 	var query string
 
 	if len(args) > 0 {
 		query = strings.Join(args, " ")
 	}
 
-	modes, err := launcher.AllModes(defaultConfigFile())
-	if err != nil {
-		panic(err)
-	}
-
-	selectedMode := launcher.FindModeByInput(modes, query)
-	c := cache.CacheStore{Dir: cacheFolder()}
-	entries, err := selectedMode.ListEntries(c)
+	entries, err := l.ListEntries(query)
 	if err != nil {
 		panic(err)
 	}

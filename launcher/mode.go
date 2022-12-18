@@ -1,14 +1,11 @@
 package launcher
 
 import (
-	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/gjhenrique/yafl/cache"
 	sh "github.com/gjhenrique/yafl/sh"
-	toml "github.com/pelletier/go-toml/v2"
 )
 
 type Mode struct {
@@ -19,73 +16,7 @@ type Mode struct {
 	CallWithoutMatch bool `toml:"call_without_match"`
 }
 
-func AppMode(modes []*Mode) *Mode {
-	var appMode *Mode
-
-	for _, m := range modes {
-		if m.Key == "apps" {
-			appMode = m
-		}
-	}
-
-	return appMode
-}
-
-func AllModes(configFile string) ([]*Mode, error) {
-	modes := make([]*Mode, 0)
-
-	fileData, err := os.ReadFile(configFile)
-	if err != nil {
-		fileData = []byte("")
-		err = nil
-	}
-
-	cfg := make(map[string]map[string]Mode)
-
-	err = toml.Unmarshal(fileData, &cfg)
-	if err != nil {
-		return modes, err
-	}
-
-	for k := range cfg["modes"] {
-		mode := cfg["modes"][k]
-		mode.Key = k
-
-		// Transforming f into f<space>
-		// When there is a space, we don't touch it
-		if mode.Prefix != "" {
-			if !strings.HasSuffix(mode.Prefix, " ") {
-				mode.Prefix = mode.Prefix + " "
-			}
-		}
-
-		modes = append(modes, &mode)
-	}
-
-	bin, err := os.Executable()
-	if err != nil {
-		return modes, err
-	}
-
-	appMode := AppMode(modes)
-
-	if appMode == nil {
-		appMode = &Mode{
-			Cache: 60,
-			Exec:  fmt.Sprintf("%s apps", bin),
-			Key:   "apps",
-		}
-		modes = append(modes, appMode)
-	} else {
-		if appMode.Exec != "" {
-			appMode.Exec = fmt.Sprintf("%s apps", bin)
-		}
-	}
-
-	return modes, nil
-}
-
-func (m *Mode) ListEntries(cache cache.CacheStore) ([]*sh.Entry, error) {
+func (m *Mode) ListEntries(cache *cache.CacheStore) ([]*sh.Entry, error) {
 	cmd := strings.Fields(m.Exec)
 
 	duration := m.Cache * time.Now().Second()
@@ -134,40 +65,4 @@ func (m *Mode) Launch(input string) error {
 	}
 
 	return nil
-}
-
-func FindModeByKey(modes []*Mode, key string) (*Mode, error) {
-	var mode *Mode
-
-	for _, m := range modes {
-		if m.Key == key {
-			mode = m
-		}
-	}
-
-	if mode == nil {
-		return nil, fmt.Errorf("Mode %s not found", key)
-	}
-
-	return mode, nil
-}
-
-func FindModeByInput(modes []*Mode, input string) *Mode {
-	var mode *Mode
-
-	for _, m := range modes {
-		if m.Prefix == "" {
-			continue
-		}
-
-		if strings.HasPrefix(input, m.Prefix) {
-			mode = m
-		}
-	}
-
-	if mode == nil {
-		mode = AppMode(modes)
-	}
-
-	return mode
 }
