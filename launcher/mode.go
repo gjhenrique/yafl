@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gjhenrique/yafl/cache"
-	sh "github.com/gjhenrique/yafl/sh"
+	"github.com/gjhenrique/yafl/sh"
 )
 
 type Mode struct {
@@ -33,7 +33,7 @@ func (m *Mode) ListEntries(cache *cache.CacheStore) ([]*sh.Entry, error) {
 	entries := make([]*sh.Entry, len(entriesFromCmd))
 
 	for i, r := range entriesFromCmd {
-		splittedEntry := strings.Split(r, "\\x31")
+		splittedEntry := strings.Split(r, sh.Delimiter)
 
 		text := r
 		id := text

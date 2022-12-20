@@ -16,6 +16,8 @@ type Entry struct {
 	Text    string
 }
 
+const Delimiter = "\\x31"
+
 func SpawnAsyncProcess(command []string, options string) error {
 	args := append(command[1:], options)
 
