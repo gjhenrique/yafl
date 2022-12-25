@@ -59,3 +59,4 @@ func cacheFolder() string {
 }
 
 var cfgFile string
+var cacheDir string
