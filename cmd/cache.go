@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	// "strings"
+	"strings"
 
-	// "github.com/gjhenrique/yafl/cache"
-
-	"errors"
+	"github.com/gjhenrique/yafl/cache"
 
 	"github.com/spf13/cobra"
 )
@@ -23,12 +21,9 @@ var cleanCache = &cobra.Command{
 }
 
 func removeCache(cmd *cobra.Command, args []string) {
-	l := newLauncher()
-	l.ListEntries("")
-	displayError(errors.New("hihi"))
-	// modeKey := strings.Join(args, " ")
-	// c := cache.CacheStore{Dir: cacheFolder()}
-	// c.Remove(modeKey)
+	modeKey := strings.Join(args, " ")
+	c := cache.CacheStore{Dir: cacheFolder()}
+	c.Remove(modeKey)
 }
 
 func init() {

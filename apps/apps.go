@@ -3,6 +3,7 @@ package apps
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"code.rocketnine.space/tslocum/desktop"
@@ -21,7 +22,15 @@ var (
 func getDesktopEntries() ([]*desktop.Entry, error) {
 	allEntries := make([]*desktop.Entry, 0, 100)
 
-	dirs := desktop.DataDirs()
+	var dirs []string
+	customDir, ok := os.LookupEnv("YAFL_DESKTOP_DIR")
+
+	if ok {
+		dirs = []string{customDir}
+	} else {
+		dirs = desktop.DataDirs()
+	}
+
 	entries, err := desktop.Scan(dirs)
 
 	if err != nil {
