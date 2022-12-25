@@ -45,6 +45,10 @@ func defaultConfigFile() string {
 }
 
 func cacheFolder() string {
+	if cacheDir != "" {
+		return cacheDir
+	}
+
 	// TODO: Only Linux related. Complete with other directories whenever it's supported
 	systemCacheFolder := filepath.Join(os.Getenv("HOME"), ".cache")
 	appCacheFolder := filepath.Join(systemCacheFolder, APP_NAME)
