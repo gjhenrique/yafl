@@ -16,3 +16,6 @@ name = "Search with bookmark"
 Portable
 Extensible
 Cache will be there after one minute
+
+Fzf for searching
+Shortcuts from the terminal, not a custom application
