@@ -22,7 +22,7 @@ func SpawnAsyncProcess(command []string, options string) error {
 	args := command[1:]
 
 	if options != "" {
-		args = append(command[1:], options)
+		args = append(args, options)
 	}
 
 	cmd := exec.Command(command[0], args...)
