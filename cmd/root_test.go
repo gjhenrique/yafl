@@ -26,6 +26,7 @@ import (
 // test that cache (mock time somehow)
 // assert that prefix is done correctly
 // assert that prefix with space is done correctly
+// assert that removes %F
 func TestFunction(t *testing.T) {
 	// t.Parallel()
 

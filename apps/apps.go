@@ -40,6 +40,7 @@ func getDesktopEntries() ([]*desktop.Entry, error) {
 	for _, dir := range entries {
 		for _, entry := range dir {
 			entry.Exec = entry.ExpandExec("")
+			entry.Exec = strings.TrimSpace(entry.Exec)
 			allEntries = append(allEntries, entry)
 		}
 	}

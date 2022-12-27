@@ -19,7 +19,11 @@ type Entry struct {
 const Delimiter = "\\x31"
 
 func SpawnAsyncProcess(command []string, options string) error {
-	args := append(command[1:], options)
+	args := command[1:]
+
+	if options != "" {
+		args = append(command[1:], options)
+	}
 
 	cmd := exec.Command(command[0], args...)
 
