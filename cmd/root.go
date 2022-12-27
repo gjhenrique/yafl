@@ -49,5 +49,5 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/yafl/config.toml)")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "cacheDir", "", "cache directory (default is $HOME/.cache)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "cache-dir", "", "cache directory (default is $HOME/.cache)")
 }

@@ -4,6 +4,8 @@ import (
 	// "example/cmd"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -35,6 +37,12 @@ func TestFunction(t *testing.T) {
 	// Set directory
 	// Set cache dir
 
+	tempDir, err := ioutil.TempDir("", "yafl")
+	defer os.RemoveAll(tempDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	name := uniuri.New()
 	server := new(gotmux.Server)
 	session, err := server.NewSession(name)
@@ -43,29 +51,25 @@ func TestFunction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// time.Sleep(5 * time.Second)
 	panes, err := session.ListPanes()
 	if len(panes) == 0 || err != nil {
 		t.Fatal(err)
 	}
 
+	configFile := filepath.Join(tempDir, "config.toml")
+	cacheDir := filepath.Join(tempDir, "cache")
+	os.Mkdir(filepath.Join(tempDir, "apps"), 0755)
+	os.Mkdir(cacheDir, 0755)
+	exe := fmt.Sprintf("../yafl --config=%s --cache-dir=%s", configFile, tempDir)
+
 	s := []string{
 		"send-keys",
 		"-t", fmt.Sprintf("%s:0", name),
-		"../yafl", "Enter",
+		exe,
 	}
 	gotmux.RunCmd(s)
 
 	time.Sleep(1 * time.Second)
 	content, err := panes[0].Capture()
 	fmt.Println(content)
-}
-
-func TestTemp(t *testing.T) {
-	file, err := ioutil.TempDir("", "yafl")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fmt.Println(file)
 }
