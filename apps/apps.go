@@ -24,7 +24,6 @@ func getDesktopEntries() ([]*desktop.Entry, error) {
 
 	var dirs []string
 	customDir, ok := os.LookupEnv("YAFL_DESKTOP_DIR")
-
 	if ok {
 		dirs = []string{customDir}
 	} else {

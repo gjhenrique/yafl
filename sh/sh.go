@@ -21,6 +21,10 @@ const Delimiter = "\\x31"
 func SpawnAsyncProcess(command []string, options string) error {
 	args := command[1:]
 
+	for i, arg := range args {
+		args[i] = strings.Trim(arg, "\"")
+	}
+
 	if options != "" {
 		args = append(args, options)
 	}
