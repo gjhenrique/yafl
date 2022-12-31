@@ -36,7 +36,9 @@ func NewLauncher(configFile string, cacheFolder string) (*Launcher, error) {
 	}, nil
 }
 
-func (l *Launcher) Fzf(entries []*sh.Entry) (*sh.Entry, *Mode, error) {
+func (l *Launcher) ProcessEntries(entries []*sh.Entry) error {
+	var m *Mode
+
 	entry, err := sh.Fzf(entries)
 
 	if err != nil {
@@ -44,16 +46,24 @@ func (l *Launcher) Fzf(entries []*sh.Entry) (*sh.Entry, *Mode, error) {
 			m := l.findModeByInput(noMatchErr.Query)
 			if m.CallWithoutMatch {
 				query := strings.TrimPrefix(noMatchErr.Query, m.Prefix)
-				entry := &sh.Entry{ModeKey: m.Key, Id: query, Text: noMatchErr.Query}
-				return entry, m, nil
+				entry = &sh.Entry{ModeKey: m.Key, Id: query, Text: noMatchErr.Query}
+			} else {
+				return err
 			}
+		} else {
+			return err
 		}
-
-		return nil, nil, err
 	}
 
-	m, err := l.findModeByKey(entry.ModeKey)
-	return entry, m, nil
+	if m, err = l.findModeByKey(entry.ModeKey); err != nil {
+		return err
+	}
+
+	if err = m.Launch(entry.Id); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (l *Launcher) ListEntries(input string) ([]*sh.Entry, error) {

@@ -21,17 +21,12 @@ func runRoot(cmd *cobra.Command, args []string) {
 		displayError(err)
 	}
 
-	entry, m, err := l.Fzf(entries)
+	err = l.ProcessEntries(entries)
 	if err != nil {
 		if _, ok := err.(*sh.SkippedInputError); ok {
 			os.Exit(1)
 		}
 
-		displayError(err)
-	}
-
-	err = m.Launch(entry.Id)
-	if err != nil {
 		displayError(err)
 	}
 }
