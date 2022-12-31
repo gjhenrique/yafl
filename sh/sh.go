@@ -21,6 +21,7 @@ const Delimiter = "\\x31"
 func SpawnAsyncProcess(command []string, options string) error {
 	args := command[1:]
 
+	// Removing double quotes for now. It's having problems when execing the binary
 	for i, arg := range args {
 		args[i] = strings.Trim(arg, "\"")
 	}
