@@ -1,13 +1,12 @@
 package launcher
 
 import (
+	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/gjhenrique/yafl/cache"
 	"github.com/gjhenrique/yafl/sh"
-	toml "github.com/pelletier/go-toml/v2"
 )
 
 var (
@@ -15,25 +14,29 @@ var (
 )
 
 type Launcher struct {
-	cache      *cache.CacheStore
-	configFile string
-	modes      []*Mode
+	cache    *cache.CacheStore
+	modes    []*Mode
+	searcher func([]*sh.Entry) (*sh.Entry, error)
 }
 
-func NewLauncher(configFile string, cacheFolder string) (*Launcher, error) {
+func NewLauncher(modes []*Mode, cacheFolder string, searcher func([]*sh.Entry) (*sh.Entry, error)) (*Launcher, error) {
 	c := cache.CacheStore{
 		Dir: cacheFolder,
 	}
-	modes, err := allModes(configFile)
-	if err != nil {
-		return nil, err
-	}
 
 	return &Launcher{
-		cache:      &c,
-		configFile: configFile,
-		modes:      modes,
+		cache:    &c,
+		modes:    modes,
+		searcher: searcher,
 	}, nil
+}
+
+func (l *Launcher) ListEntries(input string) ([]*sh.Entry, error) {
+	selectedMode := l.findModeByInput(input)
+	if selectedMode == nil {
+		return nil, errors.New("Couldn't find any mode that matches this entry")
+	}
+	return selectedMode.ListEntries(l.cache)
 }
 
 func (l *Launcher) ProcessEntries(entries []*sh.Entry) error {
@@ -66,11 +69,6 @@ func (l *Launcher) ProcessEntries(entries []*sh.Entry) error {
 	return nil
 }
 
-func (l *Launcher) ListEntries(input string) ([]*sh.Entry, error) {
-	selectedMode := l.findModeByInput(input)
-	return selectedMode.ListEntries(l.cache)
-}
-
 func (l *Launcher) findModeByKey(key string) (*Mode, error) {
 	var mode *Mode
 
@@ -101,7 +99,13 @@ func (l *Launcher) findModeByInput(input string) *Mode {
 	}
 
 	if mode == nil {
-		mode = appMode(l.modes)
+		for _, m := range l.modes {
+			// Get the first empty prefix
+			// Add a multi-mode in the future
+			if m.Prefix == "" {
+				mode = m
+			}
+		}
 	}
 
 	return mode
@@ -117,62 +121,4 @@ func appMode(modes []*Mode) *Mode {
 	}
 
 	return appMode
-}
-
-func allModes(configFile string) ([]*Mode, error) {
-	modes := make([]*Mode, 0)
-
-	fileData, err := os.ReadFile(configFile)
-	if err != nil {
-		fileData = []byte("")
-		err = nil
-	}
-
-	cfg := make(map[string]map[string]Mode)
-
-	err = toml.Unmarshal(fileData, &cfg)
-	if err != nil {
-		return modes, err
-	}
-
-	for k := range cfg["modes"] {
-		mode := cfg["modes"][k]
-		mode.Key = k
-
-		if mode.Cache == nil {
-			mode.Cache = &defaultCacheTime
-		}
-
-		// Transforming f into f<space>
-		// When there is a space, we don't touch it
-		if mode.Prefix != "" {
-			if !strings.HasSuffix(mode.Prefix, " ") {
-				mode.Prefix = mode.Prefix + " "
-			}
-		}
-
-		modes = append(modes, &mode)
-	}
-
-	bin, err := os.Executable()
-	if err != nil {
-		return modes, err
-	}
-
-	app := appMode(modes)
-
-	if app == nil {
-		app = &Mode{
-			Cache: &defaultCacheTime,
-			Exec:  fmt.Sprintf("%s apps", bin),
-			Key:   "apps",
-		}
-		modes = append(modes, app)
-	} else {
-		if app.Exec != "" {
-			app.Exec = fmt.Sprintf("%s apps", bin)
-		}
-	}
-
-	return modes, nil
 }

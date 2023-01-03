@@ -6,6 +6,7 @@ import (
 	"runtime"
 
 	"github.com/gjhenrique/yafl/launcher"
+	"github.com/gjhenrique/yafl/sh"
 )
 
 const APP_NAME = "yafl"
@@ -23,7 +24,13 @@ func configFolder() string {
 }
 
 func newLauncher() *launcher.Launcher {
-	l, err := launcher.NewLauncher(defaultConfigFile(), cacheFolder())
+	modes, err := launcher.ParseModesFromConfig(defaultConfigFile())
+	if err != nil {
+		displayError(err)
+		os.Exit(2)
+	}
+
+	l, err := launcher.NewLauncher(modes, cacheFolder(), sh.Fzf)
 	if err != nil {
 		displayError(err)
 	}

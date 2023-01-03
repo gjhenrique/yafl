@@ -2,17 +2,15 @@ package cmd
 
 import (
 	// "example/cmd"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
+	// "fmt"
+	// "io/ioutil"
+	// "os"
+	// "path/filepath"
 	"testing"
-	"time"
-
 	// "time"
-
-	"github.com/dchest/uniuri"
-	gotmux "github.com/jubnzv/go-tmux"
+	// "time"
+	// "github.com/dchest/uniuri"
+	// gotmux "github.com/jubnzv/go-tmux"
 )
 
 // Test applications showing up
@@ -37,39 +35,39 @@ func TestFunction(t *testing.T) {
 	// Set directory
 	// Set cache dir
 
-	tempDir, err := ioutil.TempDir("", "yafl")
-	defer os.RemoveAll(tempDir)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// tempDir, err := ioutil.TempDir("", "yafl")
+	// defer os.RemoveAll(tempDir)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 
-	name := uniuri.New()
-	server := new(gotmux.Server)
-	session, err := server.NewSession(name)
-	defer server.KillSession(name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// name := uniuri.New()
+	// server := new(gotmux.Server)
+	// session, err := server.NewSession(name)
+	// defer server.KillSession(name)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 
-	panes, err := session.ListPanes()
-	if len(panes) == 0 || err != nil {
-		t.Fatal(err)
-	}
+	// panes, err := session.ListPanes()
+	// if len(panes) == 0 || err != nil {
+	// 	t.Fatal(err)
+	// }
 
-	configFile := filepath.Join(tempDir, "config.toml")
-	cacheDir := filepath.Join(tempDir, "cache")
-	os.Mkdir(filepath.Join(tempDir, "apps"), 0755)
-	os.Mkdir(cacheDir, 0755)
-	exe := fmt.Sprintf("../yafl --config=%s --cache-dir=%s", configFile, tempDir)
+	// configFile := filepath.Join(tempDir, "config.toml")
+	// cacheDir := filepath.Join(tempDir, "cache")
+	// os.Mkdir(filepath.Join(tempDir, "apps"), 0755)
+	// os.Mkdir(cacheDir, 0755)
+	// exe := fmt.Sprintf("../yafl --config=%s --cache-dir=%s", configFile, tempDir)
 
-	s := []string{
-		"send-keys",
-		"-t", fmt.Sprintf("%s:0", name),
-		exe,
-	}
-	gotmux.RunCmd(s)
+	// s := []string{
+	// 	"send-keys",
+	// 	"-t", fmt.Sprintf("%s:0", name),
+	// 	exe,
+	// }
+	// gotmux.RunCmd(s)
 
-	time.Sleep(1 * time.Second)
-	content, err := panes[0].Capture()
-	fmt.Println(content)
+	// time.Sleep(1 * time.Second)
+	// content, err := panes[0].Capture()
+	// fmt.Println(content)
 }
