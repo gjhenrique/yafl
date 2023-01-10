@@ -1,10 +1,13 @@
 package test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -37,7 +40,30 @@ func (w *Workspace) WriteScript(t *testing.T, script string) string {
 	return file.Name()
 }
 
-// Create workspace method that creates a temporary file populating its stuff
+func CheckTextInFile(t *testing.T, fileName string, matchText string) error {
+	retry := 0
+
+	for {
+		content, err := os.ReadFile(fileName)
+		require.NoError(t, err)
+		if strings.Contains(string(content), matchText) {
+			return nil
+		}
+		time.Sleep(10 * time.Millisecond)
+
+		if retry > 20 {
+			return fmt.Errorf("Text %s not found in %s", matchText, string(content))
+		}
+
+		retry += 1
+	}
+}
+
+func (w *Workspace) RandomFile(t *testing.T) string {
+	file, err := ioutil.TempFile(w.Dir, "random")
+	require.NoError(t, err)
+	return file.Name()
+}
 
 func (w *Workspace) RemoveWorkspace() {
 	os.RemoveAll(w.Dir)

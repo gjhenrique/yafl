@@ -42,7 +42,7 @@ func (l *Launcher) ListEntries(input string) ([]*sh.Entry, error) {
 func (l *Launcher) ProcessEntries(entries []*sh.Entry) error {
 	var m *Mode
 
-	entry, err := sh.Fzf(entries)
+	entry, err := l.searcher(entries)
 
 	if err != nil {
 		if noMatchErr, ok := err.(*sh.NoMatchError); ok {

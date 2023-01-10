@@ -62,7 +62,7 @@ func TestWithMultiplePrefix(t *testing.T) {
 	script1 := workspace.WriteScript(t, "echo -en \"abc\"")
 	script2 := workspace.WriteScript(t, "echo -en \"def\"")
 	rootMode := mockMode(script1, "", "root")
-	prefixMode := mockMode(script2, "f", "prefix")
+	prefixMode := mockMode(script2, "f ", "prefix")
 	modes := append(append([]*Mode{}, rootMode...), prefixMode...)
 	l := createLauncher(modes, workspace.CacheDir, workspace)
 
@@ -77,7 +77,63 @@ func TestWithMultiplePrefix(t *testing.T) {
 	require.Equal(t, *prefixEntries[0], sh.Entry{ModeKey: "prefix", Id: "def", Text: "f def"})
 }
 
-// TODO: One test that checks prefix order
+func TestLaunch(t *testing.T) {
+	workspace := test.SetupWorkspace(t)
+	defer workspace.RemoveWorkspace()
+
+	randomFile := workspace.RandomFile(t)
+	script := workspace.WriteScript(t, fmt.Sprintf("echo -en $1 > %s", randomFile))
+
+	l := createLauncher(mockMode(script, "", "test"), workspace.CacheDir, workspace)
+
+	entries := []*sh.Entry{{ModeKey: "test", Id: "abc", Text: "abc"}}
+	err := l.ProcessEntries(entries)
+	require.NoError(t, err)
+
+	err = test.CheckTextInFile(t, randomFile, "abc")
+	require.NoError(t, err)
+}
+
+func TestLaunchWithNoMatch(t *testing.T) {
+	workspace := test.SetupWorkspace(t)
+	defer workspace.RemoveWorkspace()
+
+	randomFile := workspace.RandomFile(t)
+	script := workspace.WriteScript(t, fmt.Sprintf("echo -en $1 > %s", randomFile))
+
+	modes := mockMode(script, "", "test")
+	modes[0].CallWithoutMatch = true
+	l := createLauncher(modes, workspace.CacheDir, workspace)
+	l.searcher = func([]*sh.Entry) (*sh.Entry, error) {
+		return nil, &sh.NoMatchError{Query: "def"}
+	}
+
+	entries := []*sh.Entry{{ModeKey: "test", Id: "abc", Text: "abc"}}
+	err := l.ProcessEntries(entries)
+	require.NoError(t, err)
+
+	err = test.CheckTextInFile(t, randomFile, "def")
+	require.NoError(t, err)
+}
+
+func TestErrorWithNoMatch(t *testing.T) {
+	workspace := test.SetupWorkspace(t)
+	defer workspace.RemoveWorkspace()
+
+	randomFile := workspace.RandomFile(t)
+	script := workspace.WriteScript(t, fmt.Sprintf("echo -en $1 > %s", randomFile))
+
+	modes := mockMode(script, "", "test")
+	modes[0].CallWithoutMatch = false
+	l := createLauncher(modes, workspace.CacheDir, workspace)
+	l.searcher = func([]*sh.Entry) (*sh.Entry, error) {
+		return nil, &sh.NoMatchError{Query: "def"}
+	}
+
+	entries := []*sh.Entry{{ModeKey: "test", Id: "abc", Text: "abc"}}
+	err := l.ProcessEntries(entries)
+	require.EqualError(t, err, "Query def not found")
+}
 
 func mockMode(scriptName, prefix, key string) []*Mode {
 	noCache := 0
@@ -93,11 +149,10 @@ func mockMode(scriptName, prefix, key string) []*Mode {
 }
 
 func defaultSearcher(entries []*sh.Entry) (*sh.Entry, error) {
-	entry := entries[0]
-	if entry == nil {
+	if len(entries) == 0 {
 		return nil, errors.New("Entry array can't be nil")
 	}
-	return entry, nil
+	return entries[0], nil
 }
 
 func createLauncher(modes []*Mode, cacheDir string, workspace *test.Workspace) *Launcher {
