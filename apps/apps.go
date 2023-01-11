@@ -16,14 +16,15 @@ type DesktopEntry struct {
 }
 
 var (
-	applicationIcon = ""
+	applicationIcon   = ""
+	customDesktopsEnv = "YAFL_DESKTOP_DIR"
 )
 
 func getDesktopEntries() ([]*desktop.Entry, error) {
 	allEntries := make([]*desktop.Entry, 0, 100)
 
 	var dirs []string
-	customDir, ok := os.LookupEnv("YAFL_DESKTOP_DIR")
+	customDir, ok := os.LookupEnv(customDesktopsEnv)
 	if ok {
 		dirs = []string{customDir}
 	} else {
