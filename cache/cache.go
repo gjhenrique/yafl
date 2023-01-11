@@ -61,7 +61,7 @@ func (c *CacheStore) FetchCache(key string, duration time.Duration, action func(
 
 	tMilli := enc.Uint64(b)
 	cacheT := time.Unix(int64(tMilli/1000), 0)
-	if cacheT.After(time.Now()) {
+	if cacheT.Before(time.Now()) {
 		return populateCache(f, duration, action)
 	}
 
@@ -78,12 +78,7 @@ func (c *CacheStore) FetchCache(key string, duration time.Duration, action func(
 }
 
 func (c *CacheStore) Remove(key string) error {
-	filepath.Join(c.Dir, key)
-	// Vulnerable to file traversal attack. It doesn't matter because we don't expose this tool anyway
-	err := os.Remove(key)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	path := filepath.Join(c.Dir, key)
+	// Vulnerable to file traversal attack. It doesn't matter because we don't expose this tool to the Internet anyway
+	return os.Remove(path)
 }

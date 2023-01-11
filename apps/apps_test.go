@@ -16,7 +16,6 @@ func TestEmptyDirectory(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, names, 0)
-
 }
 
 // TODO: Write tests after refactoring modes structure
