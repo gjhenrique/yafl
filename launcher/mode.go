@@ -19,9 +19,9 @@ type Mode struct {
 func (m *Mode) ListEntries(cache *cache.CacheStore) ([]*sh.Entry, error) {
 	cmd := strings.Fields(m.Exec)
 
-	duration := *m.Cache * time.Now().Second()
+	duration := time.Duration(*m.Cache) * time.Second
 
-	result, err := cache.FetchCache(m.Key, time.Duration(duration), func() (string, error) {
+	result, err := cache.FetchCache(m.Key, duration, func() (string, error) {
 		return sh.SpawnSyncProcess(cmd, nil)
 	})
 	if err != nil {
