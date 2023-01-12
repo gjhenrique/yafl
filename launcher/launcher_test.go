@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gjhenrique/yafl/cache"
 	"github.com/gjhenrique/yafl/internal/test"
 	"github.com/gjhenrique/yafl/sh"
+	"github.com/gjhenrique/yafl/store"
 	"github.com/stretchr/testify/require"
 )
 
@@ -157,7 +157,7 @@ func defaultSearcher(entries []*sh.Entry) (*sh.Entry, error) {
 
 func createLauncher(modes []*Mode, cacheDir string, workspace *test.Workspace) *Launcher {
 	return &Launcher{
-		cache:    &cache.CacheStore{Dir: workspace.Dir},
+		cache:    &store.CacheStore{Dir: workspace.Dir},
 		modes:    modes,
 		searcher: defaultSearcher,
 	}

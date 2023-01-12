@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gjhenrique/yafl/cache"
 	"github.com/gjhenrique/yafl/sh"
+	"github.com/gjhenrique/yafl/store"
 )
 
 var (
@@ -14,13 +14,13 @@ var (
 )
 
 type Launcher struct {
-	cache    *cache.CacheStore
+	cache    *store.CacheStore
 	modes    []*Mode
 	searcher func([]*sh.Entry) (*sh.Entry, error)
 }
 
 func NewLauncher(modes []*Mode, cacheFolder string, searcher func([]*sh.Entry) (*sh.Entry, error)) (*Launcher, error) {
-	c := cache.CacheStore{
+	c := store.CacheStore{
 		Dir: cacheFolder,
 	}
 

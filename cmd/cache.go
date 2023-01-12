@@ -3,7 +3,7 @@ package cmd
 import (
 	"strings"
 
-	"github.com/gjhenrique/yafl/cache"
+	"github.com/gjhenrique/yafl/store"
 
 	"github.com/spf13/cobra"
 )
@@ -22,7 +22,7 @@ var cleanCache = &cobra.Command{
 
 func removeCache(cmd *cobra.Command, args []string) {
 	modeKey := strings.Join(args, " ")
-	c := cache.CacheStore{Dir: cacheFolder()}
+	c := store.CacheStore{Dir: cacheFolder()}
 	c.Remove(modeKey)
 }
 

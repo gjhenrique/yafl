@@ -1,8 +1,9 @@
-package cache
+package store
 
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -40,7 +41,7 @@ func populateCache(f *os.File, duration time.Duration, action func() (string, er
 }
 
 func (c *CacheStore) FetchCache(key string, duration time.Duration, action func() (string, error)) (string, error) {
-	fileName := filepath.Join(c.Dir, key)
+	fileName := filepath.Join(c.Dir, fmt.Sprintf("%s_cache", key))
 
 	f, err := os.OpenFile(fileName, os.O_RDWR, 0644)
 	defer f.Close()

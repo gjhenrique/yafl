@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gjhenrique/yafl/cache"
 	"github.com/gjhenrique/yafl/sh"
+	"github.com/gjhenrique/yafl/store"
 )
 
 type Mode struct {
@@ -16,7 +16,7 @@ type Mode struct {
 	CallWithoutMatch bool `toml:"call_without_match"`
 }
 
-func (m *Mode) ListEntries(cache *cache.CacheStore) ([]*sh.Entry, error) {
+func (m *Mode) ListEntries(cache *store.CacheStore) ([]*sh.Entry, error) {
 	cmd := strings.Fields(m.Exec)
 
 	duration := time.Duration(*m.Cache) * time.Second
