@@ -26,9 +26,9 @@ func TestOrderIsMaintained(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, entries, 3)
-	require.Equal(t, string(entries[0]), "b")
-	require.Equal(t, string(entries[1]), "a")
-	require.Equal(t, string(entries[2]), "c")
+	require.Equal(t, string(entries[0].Entry), "b")
+	require.Equal(t, string(entries[1].Entry), "a")
+	require.Equal(t, string(entries[2].Entry), "c")
 }
 
 func TestEmptyArrayWhenFileDoesNotExist(t *testing.T) {

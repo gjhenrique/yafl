@@ -15,6 +15,11 @@ type HistoryStore struct {
 	Dir string
 }
 
+type HistoryEntry struct {
+	Entry    []byte
+	Position int
+}
+
 func formatEntry(entryKey []byte, n int) []byte {
 	e := append(entryKey, "\t"...)
 	return append(e, strconv.Itoa(n)...)
@@ -25,10 +30,10 @@ func (h *HistoryStore) fileName(modeKey string) string {
 	return filepath.Join(h.Dir, fmt.Sprintf("%s_history", modeKey))
 }
 
-func (h *HistoryStore) ListEntries(modeKey string) ([][]byte, error) {
+func (h *HistoryStore) ListEntries(modeKey string) ([]*HistoryEntry, error) {
 	fileContent, err := ioutil.ReadFile(h.fileName(modeKey))
 	fields := bytes.Split(fileContent, []byte("\n"))
-	s := make([][]byte, 0)
+	s := make([]*HistoryEntry, 0)
 
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -38,11 +43,14 @@ func (h *HistoryStore) ListEntries(modeKey string) ([][]byte, error) {
 		}
 	}
 
+	var i int
 	for _, field := range fields {
 		arr := bytes.Split(field, []byte("\t"))
 		first := arr[0]
 		if len(first) > 0 {
-			s = append(s, first)
+			entry := HistoryEntry{Entry: first, Position: i}
+			s = append(s, &entry)
+			i += i
 		}
 	}
 
