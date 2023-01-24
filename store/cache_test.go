@@ -126,8 +126,9 @@ func TestInvokesAgainWhenCacheIsRemoved(t *testing.T) {
 
 	store.FetchCache("key", 10*time.Second, a)
 	store.FetchCache("key", 10*time.Second, a)
-	store.Remove("key")
-	// Invoke the function again
+	err := store.Remove("key")
+	require.NoError(t, err)
+
 	store.FetchCache("key", 10*time.Second, a)
 	require.Equal(t, i, 2)
 }

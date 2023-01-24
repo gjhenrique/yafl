@@ -79,7 +79,7 @@ func (c *CacheStore) FetchCache(key string, duration time.Duration, action func(
 }
 
 func (c *CacheStore) Remove(key string) error {
-	path := filepath.Join(c.Dir, key)
+	path := filepath.Join(c.Dir, fmt.Sprintf("%s_cache", key))
 	// Vulnerable to file traversal attack. It doesn't matter because we don't expose this tool to the Internet anyway
 	return os.Remove(path)
 }
