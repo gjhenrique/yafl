@@ -14,6 +14,7 @@ type Mode struct {
 	Prefix           string
 	Key              string
 	CallWithoutMatch bool `toml:"call_without_match"`
+	HistoryEnabled   bool `toml:"history_enabled"`
 }
 
 func (m *Mode) ListEntries(cache *store.CacheStore) ([]*sh.Entry, error) {
@@ -21,14 +22,18 @@ func (m *Mode) ListEntries(cache *store.CacheStore) ([]*sh.Entry, error) {
 
 	duration := time.Duration(*m.Cache) * time.Second
 
-	result, err := cache.FetchCache(m.Key, duration, func() (string, error) {
-		return sh.SpawnSyncProcess(cmd, nil)
+	result, err := cache.FetchCache(m.Key, duration, func() ([]byte, error) {
+		value, err := sh.SpawnSyncProcess(cmd, nil)
+		if err != nil {
+			return nil, err
+		}
+		return []byte(value), nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	entriesFromCmd := strings.Split(result, "\n")
+	entriesFromCmd := strings.Split(string(result), "\n")
 
 	entries := make([]*sh.Entry, len(entriesFromCmd))
 
@@ -47,10 +52,6 @@ func (m *Mode) ListEntries(cache *store.CacheStore) ([]*sh.Entry, error) {
 		}
 
 		entries[i] = &sh.Entry{ModeKey: m.Key, Text: text, Id: id}
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	return entries, nil

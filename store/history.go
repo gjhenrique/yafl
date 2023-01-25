@@ -15,9 +15,13 @@ type HistoryStore struct {
 	Dir string
 }
 
-type HistoryEntry struct {
-	Entry    []byte
-	Position int
+type historyEntry struct {
+	key      []byte
+	position int
+}
+
+type HistoryEntries struct {
+	entries map[string]historyEntry
 }
 
 func formatEntry(entryKey []byte, n int) []byte {
@@ -26,35 +30,46 @@ func formatEntry(entryKey []byte, n int) []byte {
 
 }
 
-func (h *HistoryStore) fileName(modeKey string) string {
-	return filepath.Join(h.Dir, fmt.Sprintf("%s_history", modeKey))
+func (h HistoryEntries) FindPosition(key []byte) (int, bool) {
+	val, ok := h.entries[string(key)]
+	if ok {
+		return val.position, true
+	}
+
+	return 0, false
 }
 
-func (h *HistoryStore) ListEntries(modeKey string) ([]*HistoryEntry, error) {
+func (h *HistoryStore) ListEntries(modeKey string) (HistoryEntries, error) {
 	fileContent, err := ioutil.ReadFile(h.fileName(modeKey))
 	fields := bytes.Split(fileContent, []byte("\n"))
-	s := make([]*HistoryEntry, 0)
+	s := HistoryEntries{
+		entries: make(map[string]historyEntry, 0),
+	}
 
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return s, nil
 		} else {
-			return nil, err
+			return s, err
 		}
 	}
 
-	var i int
+	var pos int
 	for _, field := range fields {
 		arr := bytes.Split(field, []byte("\t"))
 		first := arr[0]
 		if len(first) > 0 {
-			entry := HistoryEntry{Entry: first, Position: i}
-			s = append(s, &entry)
-			i += i
+			entry := historyEntry{key: first, position: pos}
+			s.entries[string(entry.key)] = entry
+			pos += 1
 		}
 	}
 
 	return s, nil
+}
+
+func (h *HistoryStore) fileName(modeKey string) string {
+	return filepath.Join(h.Dir, fmt.Sprintf("%s_history", modeKey))
 }
 
 func (h *HistoryStore) IncrementEntry(modeKey string, entryKey []byte) error {

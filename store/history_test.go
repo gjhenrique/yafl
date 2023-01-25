@@ -25,10 +25,20 @@ func TestOrderIsMaintained(t *testing.T) {
 	entries, err := store.ListEntries("key")
 	require.NoError(t, err)
 
-	require.Len(t, entries, 3)
-	require.Equal(t, string(entries[0].Entry), "b")
-	require.Equal(t, string(entries[1].Entry), "a")
-	require.Equal(t, string(entries[2].Entry), "c")
+	pos, ok := entries.FindPosition([]byte("b"))
+	require.True(t, ok)
+	require.Equal(t, pos, 0)
+
+	pos, ok = entries.FindPosition([]byte("a"))
+	require.True(t, ok)
+	require.Equal(t, pos, 1)
+
+	pos, ok = entries.FindPosition([]byte("c"))
+	require.True(t, ok)
+	require.Equal(t, pos, 2)
+
+	_, ok = entries.FindPosition([]byte("d"))
+	require.False(t, ok)
 }
 
 func TestEmptyArrayWhenFileDoesNotExist(t *testing.T) {
@@ -39,5 +49,7 @@ func TestEmptyArrayWhenFileDoesNotExist(t *testing.T) {
 
 	entries, err := store.ListEntries("key")
 	require.NoError(t, err)
-	require.Len(t, entries, 0)
+
+	_, ok := entries.FindPosition([]byte("b"))
+	require.False(t, ok)
 }

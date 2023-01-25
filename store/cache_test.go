@@ -17,15 +17,15 @@ func TestReturnCorrectValues(t *testing.T) {
 
 	store := CacheStore{Dir: workspace.CacheDir}
 	i := 0
-	a := func() (string, error) {
+	cb := func() ([]byte, error) {
 		i += 1
-		return strconv.Itoa(i), nil
+		return []byte(strconv.Itoa(i)), nil
 	}
 
-	store.FetchCache("key", 60*time.Second, a)
-	value, err := store.FetchCache("key", 60*time.Second, a)
+	store.FetchCache("key", 60*time.Second, cb)
+	value, err := store.FetchCache("key", 60*time.Second, cb)
 	require.NoError(t, err)
-	require.Equal(t, value, "1")
+	require.Equal(t, string(value), "1")
 }
 
 func TestActionIsNotCalledMultipleTimes(t *testing.T) {
@@ -34,14 +34,14 @@ func TestActionIsNotCalledMultipleTimes(t *testing.T) {
 
 	store := CacheStore{Dir: workspace.CacheDir}
 	i := 0
-	a := func() (string, error) {
+	cb := func() ([]byte, error) {
 		i += 1
-		return strconv.Itoa(i), nil
+		return []byte(strconv.Itoa(i)), nil
 	}
 
-	store.FetchCache("key", 60*time.Second, a)
-	store.FetchCache("key", 60*time.Second, a)
-	store.FetchCache("key", 60*time.Second, a)
+	store.FetchCache("key", 60*time.Second, cb)
+	store.FetchCache("key", 60*time.Second, cb)
+	store.FetchCache("key", 60*time.Second, cb)
 	require.Equal(t, i, 1)
 }
 
@@ -51,15 +51,15 @@ func TestCacheIsNotPopulatedWhenItReturnsAnError(t *testing.T) {
 
 	store := CacheStore{Dir: workspace.CacheDir}
 	i := 0
-	a := func() (string, error) {
+	cb := func() ([]byte, error) {
 		i += 1
-		return strconv.Itoa(i), errors.New("Code Error")
+		return []byte(strconv.Itoa(i)), errors.New("Code Error")
 	}
 
-	store.FetchCache("key", 60*time.Second, a)
-	value, err := store.FetchCache("key", 60*time.Second, a)
+	store.FetchCache("key", 60*time.Second, cb)
+	value, err := store.FetchCache("key", 60*time.Second, cb)
 	require.Error(t, err, "Code Error")
-	require.Equal(t, value, "2")
+	require.Equal(t, string(value), "2")
 }
 
 func TestErrorWhenDirectoryIsNotThere(t *testing.T) {
@@ -68,14 +68,14 @@ func TestErrorWhenDirectoryIsNotThere(t *testing.T) {
 
 	store := CacheStore{Dir: filepath.Join(workspace.Dir, "not_a_folder")}
 	i := 0
-	a := func() (string, error) {
+	cb := func() ([]byte, error) {
 		i += 1
-		return strconv.Itoa(i), nil
+		return []byte(strconv.Itoa(i)), nil
 	}
 
-	store.FetchCache("key", 60*time.Second, a)
-	store.FetchCache("key", 60*time.Second, a)
-	store.FetchCache("key", 60*time.Second, a)
+	store.FetchCache("key", 60*time.Second, cb)
+	store.FetchCache("key", 60*time.Second, cb)
+	store.FetchCache("key", 60*time.Second, cb)
 	require.Equal(t, i, 3)
 }
 
@@ -85,13 +85,13 @@ func TestDifferentKeysNotInterferingWithEachOther(t *testing.T) {
 
 	store := CacheStore{Dir: workspace.CacheDir}
 	i := 0
-	a := func() (string, error) {
+	cb := func() ([]byte, error) {
 		i += 1
-		return strconv.Itoa(i), nil
+		return []byte(strconv.Itoa(i)), nil
 	}
 
-	store.FetchCache("key1", 60*time.Second, a)
-	store.FetchCache("key2", 60*time.Second, a)
+	store.FetchCache("key1", 60*time.Second, cb)
+	store.FetchCache("key2", 60*time.Second, cb)
 	require.Equal(t, i, 2)
 }
 
@@ -101,15 +101,15 @@ func TestInvalidatesCacheProperly(t *testing.T) {
 
 	store := CacheStore{Dir: workspace.CacheDir}
 	i := 0
-	a := func() (string, error) {
+	cb := func() ([]byte, error) {
 		i += 1
-		return strconv.Itoa(i), nil
+		return []byte(strconv.Itoa(i)), nil
 	}
 
-	store.FetchCache("key", 0, a)
+	store.FetchCache("key", 0, cb)
 	// Invokes it because there is no expiration time
-	store.FetchCache("key", 10*time.Second, a)
-	store.FetchCache("key", 10*time.Second, a)
+	store.FetchCache("key", 10*time.Second, cb)
+	store.FetchCache("key", 10*time.Second, cb)
 	require.Equal(t, i, 2)
 }
 
@@ -119,16 +119,16 @@ func TestInvokesAgainWhenCacheIsRemoved(t *testing.T) {
 
 	store := CacheStore{Dir: workspace.CacheDir}
 	i := 0
-	a := func() (string, error) {
+	cb := func() ([]byte, error) {
 		i += 1
-		return strconv.Itoa(i), nil
+		return []byte(strconv.Itoa(i)), nil
 	}
 
-	store.FetchCache("key", 10*time.Second, a)
-	store.FetchCache("key", 10*time.Second, a)
+	store.FetchCache("key", 10*time.Second, cb)
+	store.FetchCache("key", 10*time.Second, cb)
 	err := store.Remove("key")
 	require.NoError(t, err)
 
-	store.FetchCache("key", 10*time.Second, a)
+	store.FetchCache("key", 10*time.Second, cb)
 	require.Equal(t, i, 2)
 }

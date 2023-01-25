@@ -19,7 +19,7 @@ type CacheStore struct {
 	Dir string
 }
 
-func populateCache(f *os.File, duration time.Duration, action func() (string, error)) (string, error) {
+func populateCache(f *os.File, duration time.Duration, action func() ([]byte, error)) ([]byte, error) {
 	t := time.Now().Add(duration)
 
 	result, err := action()
@@ -40,7 +40,7 @@ func populateCache(f *os.File, duration time.Duration, action func() (string, er
 	return result, nil
 }
 
-func (c *CacheStore) FetchCache(key string, duration time.Duration, action func() (string, error)) (string, error) {
+func (c *CacheStore) FetchCache(key string, duration time.Duration, action func() ([]byte, error)) ([]byte, error) {
 	fileName := filepath.Join(c.Dir, fmt.Sprintf("%s_cache", key))
 
 	f, err := os.OpenFile(fileName, os.O_RDWR, 0644)
@@ -75,7 +75,7 @@ func (c *CacheStore) FetchCache(key string, duration time.Duration, action func(
 	strBytes := make([]byte, len)
 	_, err = f.ReadAt(strBytes, int64(lenUnixMilli+lenPayloadLength))
 
-	return string(strBytes), nil
+	return strBytes, nil
 }
 
 func (c *CacheStore) Remove(key string) error {
