@@ -1,6 +1,7 @@
 package sh
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -12,8 +13,8 @@ import (
 
 type Entry struct {
 	ModeKey string
-	Id      string
-	Text    string
+	Id      []byte
+	Text    []byte
 }
 
 const Delimiter = "\\x31"
@@ -26,8 +27,8 @@ func SpawnAsyncProcess(command []string, options string) error {
 		args[i] = strings.Trim(arg, "\"")
 	}
 
-	if options != "" {
-		args = append(args, options)
+	if len(options) > 0 {
+		args = append(args, string(options))
 	}
 
 	cmd := exec.Command(command[0], args...)
@@ -42,25 +43,25 @@ func SpawnAsyncProcess(command []string, options string) error {
 	return err
 }
 
-func SpawnSyncProcess(command []string, input []byte) (string, error) {
-	var result strings.Builder
+func SpawnSyncProcess(command []string, input []byte) ([]byte, error) {
+	var b bytes.Buffer
 
 	cmd := exec.Command(command[0], command[1:]...)
-	cmd.Stdout = &result
+	cmd.Stdout = bufio.NewWriter(&b)
 	cmd.Stderr = os.Stderr
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	io.Copy(stdin, bytes.NewReader(input))
 	if err = stdin.Close(); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	err = cmd.Run()
 
-	return result.String(), err
+	return b.Bytes(), err
 }
 
 func FormatEntries(entries []*Entry) string {
@@ -75,7 +76,7 @@ func FormatEntries(entries []*Entry) string {
 }
 
 type NoMatchError struct {
-	Query string
+	Query []byte
 }
 
 func (e *NoMatchError) Error() string {
@@ -117,7 +118,7 @@ func Fzf(entries []*Entry) (*Entry, error) {
 
 	result, err := SpawnSyncProcess(command, []byte(FormatEntries(entries)))
 
-	splittedResult := strings.Split(result, "\n")
+	splittedResult := bytes.Split(result, []byte("\n"))
 	query := splittedResult[0]
 
 	if err != nil {
@@ -141,9 +142,9 @@ func Fzf(entries []*Entry) (*Entry, error) {
 
 	// TODO: Make \034 a variable
 	// Use same delimiter from rofi
-	separatedEntry := strings.Split(splittedResult[1], "\034")
+	separatedEntry := bytes.Split(splittedResult[1], []byte("\034"))
 	if len(separatedEntry) != 3 {
 		return nil, fmt.Errorf("Result %s not compatible with delimiters", result)
 	}
-	return &Entry{ModeKey: separatedEntry[0], Id: separatedEntry[1], Text: separatedEntry[2]}, nil
+	return &Entry{ModeKey: string(separatedEntry[0]), Id: separatedEntry[1], Text: separatedEntry[2]}, nil
 }

@@ -1,6 +1,7 @@
 package launcher
 
 import (
+	"bytes"
 	"sort"
 	"strings"
 	"time"
@@ -34,25 +35,30 @@ func (m *Mode) ListEntries(historyStore *store.HistoryStore, cache *store.CacheS
 		return nil, err
 	}
 
-	entriesFromCmd := strings.Split(string(result), "\n")
+	entriesFromCmd := bytes.Split(result, []byte("\n"))
 
 	entries := make([]*sh.Entry, len(entriesFromCmd))
 
 	for i, r := range entriesFromCmd {
-		splittedEntry := strings.Split(r, sh.Delimiter)
+		splittedEntry := bytes.Split(r, []byte(sh.Delimiter))
 
 		text := r
 		id := text
 		if len(splittedEntry) > 1 {
 			id = splittedEntry[0]
-			text = strings.Join(splittedEntry[1:], " ")
+			text = bytes.Join(splittedEntry[1:], []byte(" "))
 		}
+
+		newText := text
 
 		if m.Prefix != "" {
-			text = m.Prefix + text
+			prefix := []byte(m.Prefix)
+			newText = make([]byte, len(prefix)+len(text))
+			copy(newText, prefix)
+			copy(newText[len(prefix):], text)
 		}
 
-		entries[i] = &sh.Entry{ModeKey: m.Key, Text: text, Id: id}
+		entries[i] = &sh.Entry{ModeKey: m.Key, Text: newText, Id: id}
 	}
 
 	if m.HistoryEnabled {
@@ -80,10 +86,10 @@ func (m *Mode) ListEntries(historyStore *store.HistoryStore, cache *store.CacheS
 	return entries, nil
 }
 
-func (m *Mode) Launch(input string) error {
+func (m *Mode) Launch(input []byte) error {
 	cmd := strings.Fields(m.Exec)
 
-	err := sh.SpawnAsyncProcess(cmd, input)
+	err := sh.SpawnAsyncProcess(cmd, string(input))
 	if err != nil {
 		return err
 	}

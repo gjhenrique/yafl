@@ -25,7 +25,7 @@ func search(cmd *cobra.Command, args []string) {
 		query = strings.Join(args, " ")
 	}
 
-	entries, err := l.ListEntries(query)
+	entries, err := l.ListEntries([]byte(query))
 	if err != nil {
 		displayError(err)
 	}

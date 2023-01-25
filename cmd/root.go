@@ -16,7 +16,7 @@ var rootCmd = &cobra.Command{
 func runRoot(cmd *cobra.Command, args []string) {
 	l := newLauncher()
 
-	entries, err := l.ListEntries("")
+	entries, err := l.ListEntries([]byte(""))
 	if err != nil {
 		displayError(err)
 	}

@@ -20,12 +20,12 @@ func TestListEntriesWithRawMode(t *testing.T) {
 	script := workspace.WriteScript(t, "echo -en \"abc\\ndef\"")
 	l := createLauncher(mockMode(script, "", "test"), workspace.CacheDir, workspace)
 
-	entries, err := l.ListEntries("")
+	entries, err := l.ListEntries([]byte(""))
 	require.NoError(t, err)
 
 	require.Len(t, entries, 2)
-	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: "abc", Text: "abc"})
-	require.Equal(t, *entries[1], sh.Entry{ModeKey: "test", Id: "def", Text: "def"})
+	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: []byte("abc"), Text: []byte("abc")})
+	require.Equal(t, *entries[1], sh.Entry{ModeKey: "test", Id: []byte("def"), Text: []byte("def")})
 }
 
 func TestListEntriesWithDelimiter(t *testing.T) {
@@ -36,12 +36,12 @@ func TestListEntriesWithDelimiter(t *testing.T) {
 	script := workspace.WriteScript(t, fmt.Sprintf("echo -en \"abc\\\\\\%sdef\\nghi\\\\\\%sjkl\"", sh.Delimiter, sh.Delimiter))
 	l := createLauncher(mockMode(script, "", "test"), workspace.CacheDir, workspace)
 
-	entries, err := l.ListEntries("")
+	entries, err := l.ListEntries([]byte(""))
 	require.NoError(t, err)
 
 	require.Len(t, entries, 2)
-	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: "abc", Text: "def"})
-	require.Equal(t, *entries[1], sh.Entry{ModeKey: "test", Id: "ghi", Text: "jkl"})
+	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: []byte("abc"), Text: []byte("def")})
+	require.Equal(t, *entries[1], sh.Entry{ModeKey: "test", Id: []byte("ghi"), Text: []byte("jkl")})
 }
 
 func TestErrorWithNoMode(t *testing.T) {
@@ -51,7 +51,7 @@ func TestErrorWithNoMode(t *testing.T) {
 	var modes []*Mode
 	l := createLauncher(modes, workspace.CacheDir, workspace)
 
-	_, err := l.ListEntries("")
+	_, err := l.ListEntries([]byte(""))
 	require.Error(t, err)
 }
 
@@ -66,15 +66,15 @@ func TestWithMultiplePrefix(t *testing.T) {
 	modes := append(append([]*Mode{}, rootMode...), prefixMode...)
 	l := createLauncher(modes, workspace.CacheDir, workspace)
 
-	entries, err := l.ListEntries("")
+	entries, err := l.ListEntries([]byte(""))
 	require.NoError(t, err)
 	require.Len(t, entries, 1)
-	require.Equal(t, *entries[0], sh.Entry{ModeKey: "root", Id: "abc", Text: "abc"})
+	require.Equal(t, *entries[0], sh.Entry{ModeKey: "root", Id: []byte("abc"), Text: []byte("abc")})
 
-	prefixEntries, err := l.ListEntries("f def")
+	prefixEntries, err := l.ListEntries([]byte("f def"))
 	require.NoError(t, err)
 	require.Len(t, prefixEntries, 1)
-	require.Equal(t, *prefixEntries[0], sh.Entry{ModeKey: "prefix", Id: "def", Text: "f def"})
+	require.Equal(t, *prefixEntries[0], sh.Entry{ModeKey: "prefix", Id: []byte("def"), Text: []byte("f def")})
 }
 
 func TestLaunch(t *testing.T) {
@@ -86,7 +86,7 @@ func TestLaunch(t *testing.T) {
 
 	l := createLauncher(mockMode(script, "", "test"), workspace.CacheDir, workspace)
 
-	entries := []*sh.Entry{{ModeKey: "test", Id: "abc", Text: "abc"}}
+	entries := []*sh.Entry{{ModeKey: "test", Id: []byte("abc"), Text: []byte("abc")}}
 	err := l.ProcessEntries(entries)
 	require.NoError(t, err)
 
@@ -105,18 +105,18 @@ func TestLaunchWithHistory(t *testing.T) {
 	m[0].HistoryEnabled = true
 	l := createLauncher(m, workspace.CacheDir, workspace)
 
-	entries := []*sh.Entry{{ModeKey: "test", Id: "b", Text: "b"}}
+	entries := []*sh.Entry{{ModeKey: "test", Id: []byte("b"), Text: []byte("b")}}
 	err := l.ProcessEntries(entries)
 	require.NoError(t, err)
 
 	script2 := workspace.WriteScript(t, "echo -en \"a\\nb\\nc\\nd\"")
 	m[0].Exec = fmt.Sprintf("bash %s", script2)
 
-	entries, err = l.ListEntries("")
+	entries, err = l.ListEntries([]byte(""))
 	require.NoError(t, err)
 
 	require.Len(t, entries, 4)
-	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: "b", Text: "b"})
+	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: []byte("b"), Text: []byte("b")})
 }
 
 func TestLaunchWithNoMatch(t *testing.T) {
@@ -130,10 +130,10 @@ func TestLaunchWithNoMatch(t *testing.T) {
 	modes[0].CallWithoutMatch = true
 	l := createLauncher(modes, workspace.CacheDir, workspace)
 	l.searcher = func([]*sh.Entry) (*sh.Entry, error) {
-		return nil, &sh.NoMatchError{Query: "def"}
+		return nil, &sh.NoMatchError{Query: []byte("def")}
 	}
 
-	entries := []*sh.Entry{{ModeKey: "test", Id: "abc", Text: "abc"}}
+	entries := []*sh.Entry{{ModeKey: "test", Id: []byte("abc"), Text: []byte("abc")}}
 	err := l.ProcessEntries(entries)
 	require.NoError(t, err)
 
@@ -152,10 +152,10 @@ func TestErrorWithNoMatch(t *testing.T) {
 	modes[0].CallWithoutMatch = false
 	l := createLauncher(modes, workspace.CacheDir, workspace)
 	l.searcher = func([]*sh.Entry) (*sh.Entry, error) {
-		return nil, &sh.NoMatchError{Query: "def"}
+		return nil, &sh.NoMatchError{Query: []byte("def")}
 	}
 
-	entries := []*sh.Entry{{ModeKey: "test", Id: "abc", Text: "abc"}}
+	entries := []*sh.Entry{{ModeKey: "test", Id: []byte("abc"), Text: []byte("abc")}}
 	err := l.ProcessEntries(entries)
 	require.EqualError(t, err, "Query def not found")
 }
@@ -173,14 +173,14 @@ func TestHistoryListSort(t *testing.T) {
 	l.historyStore.IncrementEntry("test", []byte("b"))
 	l.historyStore.IncrementEntry("test", []byte("c"))
 
-	entries, err := l.ListEntries("")
+	entries, err := l.ListEntries([]byte(""))
 	require.NoError(t, err)
 
 	require.Len(t, entries, 4)
-	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: "b", Text: "b"})
-	require.Equal(t, *entries[1], sh.Entry{ModeKey: "test", Id: "c", Text: "c"})
-	require.Equal(t, *entries[2], sh.Entry{ModeKey: "test", Id: "a", Text: "a"})
-	require.Equal(t, *entries[3], sh.Entry{ModeKey: "test", Id: "d", Text: "d"})
+	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: []byte("b"), Text: []byte("b")})
+	require.Equal(t, *entries[1], sh.Entry{ModeKey: "test", Id: []byte("c"), Text: []byte("c")})
+	require.Equal(t, *entries[2], sh.Entry{ModeKey: "test", Id: []byte("a"), Text: []byte("a")})
+	require.Equal(t, *entries[3], sh.Entry{ModeKey: "test", Id: []byte("d"), Text: []byte("d")})
 }
 
 func TestHistoryDisabledNoImpact(t *testing.T) {
@@ -195,14 +195,14 @@ func TestHistoryDisabledNoImpact(t *testing.T) {
 	l.historyStore.IncrementEntry("test", []byte("b"))
 	l.historyStore.IncrementEntry("test", []byte("c"))
 
-	entries, err := l.ListEntries("")
+	entries, err := l.ListEntries([]byte(""))
 	require.NoError(t, err)
 
 	require.Len(t, entries, 4)
-	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: "a", Text: "a"})
-	require.Equal(t, *entries[1], sh.Entry{ModeKey: "test", Id: "b", Text: "b"})
-	require.Equal(t, *entries[2], sh.Entry{ModeKey: "test", Id: "c", Text: "c"})
-	require.Equal(t, *entries[3], sh.Entry{ModeKey: "test", Id: "d", Text: "d"})
+	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: []byte("a"), Text: []byte("a")})
+	require.Equal(t, *entries[1], sh.Entry{ModeKey: "test", Id: []byte("b"), Text: []byte("b")})
+	require.Equal(t, *entries[2], sh.Entry{ModeKey: "test", Id: []byte("c"), Text: []byte("c")})
+	require.Equal(t, *entries[3], sh.Entry{ModeKey: "test", Id: []byte("d"), Text: []byte("d")})
 
 }
 

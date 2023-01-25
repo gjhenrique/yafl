@@ -1,9 +1,9 @@
 package launcher
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/gjhenrique/yafl/sh"
 	"github.com/gjhenrique/yafl/store"
@@ -37,7 +37,7 @@ func NewLauncher(modes []*Mode, cacheFolder string, searcher func([]*sh.Entry) (
 	}, nil
 }
 
-func (l *Launcher) ListEntries(input string) ([]*sh.Entry, error) {
+func (l *Launcher) ListEntries(input []byte) ([]*sh.Entry, error) {
 	selectedMode := l.findModeByInput(input)
 	if selectedMode == nil {
 		return nil, errors.New("Couldn't find any mode that matches this entry")
@@ -54,7 +54,7 @@ func (l *Launcher) ProcessEntries(entries []*sh.Entry) error {
 		if noMatchErr, ok := err.(*sh.NoMatchError); ok {
 			m := l.findModeByInput(noMatchErr.Query)
 			if m.CallWithoutMatch {
-				query := strings.TrimPrefix(noMatchErr.Query, m.Prefix)
+				query := bytes.TrimPrefix(noMatchErr.Query, []byte(m.Prefix))
 				entry = &sh.Entry{ModeKey: m.Key, Id: query, Text: noMatchErr.Query}
 			} else {
 				return err
@@ -93,7 +93,7 @@ func (l *Launcher) findModeByKey(key string) (*Mode, error) {
 	return mode, nil
 }
 
-func (l *Launcher) findModeByInput(input string) *Mode {
+func (l *Launcher) findModeByInput(input []byte) *Mode {
 	var mode *Mode
 
 	for _, m := range l.modes {
@@ -101,7 +101,7 @@ func (l *Launcher) findModeByInput(input string) *Mode {
 			continue
 		}
 
-		if strings.HasPrefix(input, m.Prefix) {
+		if bytes.HasPrefix(input, []byte(m.Prefix)) {
 			mode = m
 		}
 	}
