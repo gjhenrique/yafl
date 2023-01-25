@@ -1,6 +1,7 @@
 package launcher
 
 import (
+	"sort"
 	"strings"
 	"time"
 
@@ -17,7 +18,7 @@ type Mode struct {
 	HistoryEnabled   bool `toml:"history_enabled"`
 }
 
-func (m *Mode) ListEntries(cache *store.CacheStore) ([]*sh.Entry, error) {
+func (m *Mode) ListEntries(historyStore *store.HistoryStore, cache *store.CacheStore) ([]*sh.Entry, error) {
 	cmd := strings.Fields(m.Exec)
 
 	duration := time.Duration(*m.Cache) * time.Second
@@ -52,6 +53,28 @@ func (m *Mode) ListEntries(cache *store.CacheStore) ([]*sh.Entry, error) {
 		}
 
 		entries[i] = &sh.Entry{ModeKey: m.Key, Text: text, Id: id}
+	}
+
+	if m.HistoryEnabled {
+		historyEntries, err := historyStore.ListEntries(m.Key)
+		if err != nil {
+			return nil, err
+		}
+
+		sort.SliceStable(entries, func(i, j int) bool {
+			posI, ok := historyEntries.FindPosition([]byte(entries[i].Id))
+			if !ok {
+				return false
+			}
+
+			posJ, ok := historyEntries.FindPosition([]byte(entries[j].Id))
+			if !ok {
+				return true
+			}
+
+			return posI < posJ
+		})
+
 	}
 
 	return entries, nil

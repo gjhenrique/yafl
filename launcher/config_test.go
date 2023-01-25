@@ -72,6 +72,7 @@ exec="ls -lah"`
 	require.Equal(t, modes[0].Exec, "ls -lah")
 	require.Equal(t, *modes[0].Cache, 60)
 	require.False(t, modes[0].CallWithoutMatch)
+	require.False(t, modes[0].HistoryEnabled)
 }
 
 func TestDoesNotOverrideExecButCacheMode(t *testing.T) {
@@ -98,4 +99,5 @@ func assertAppMode(t *testing.T, mode *Mode) {
 	require.True(t, strings.HasSuffix(mode.Exec, " apps"))
 	require.Equal(t, mode.Prefix, "")
 	require.False(t, mode.CallWithoutMatch)
+	require.True(t, mode.HistoryEnabled)
 }

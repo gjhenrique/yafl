@@ -52,9 +52,10 @@ func ParseModesFromConfig(configFile string) ([]*Mode, error) {
 
 	if app == nil {
 		app = &Mode{
-			Cache: &defaultCacheTime,
-			Exec:  fmt.Sprintf("%s apps", bin),
-			Key:   "apps",
+			Cache:          &defaultCacheTime,
+			Exec:           fmt.Sprintf("%s apps", bin),
+			Key:            "apps",
+			HistoryEnabled: true,
 		}
 		modes = append(modes, app)
 	} else {

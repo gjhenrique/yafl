@@ -135,6 +135,52 @@ func TestErrorWithNoMatch(t *testing.T) {
 	require.EqualError(t, err, "Query def not found")
 }
 
+func TestHistoryListSort(t *testing.T) {
+	workspace := test.SetupWorkspace(t)
+	defer workspace.RemoveWorkspace()
+
+	script := workspace.WriteScript(t, "echo -en \"a\\nb\\nc\\nd\"")
+	m := mockMode(script, "", "test")
+	m[0].HistoryEnabled = true
+	l := createLauncher(m, workspace.CacheDir, workspace)
+
+	l.historyStore.IncrementEntry("test", []byte("b"))
+	l.historyStore.IncrementEntry("test", []byte("b"))
+	l.historyStore.IncrementEntry("test", []byte("c"))
+
+	entries, err := l.ListEntries("")
+	require.NoError(t, err)
+
+	require.Len(t, entries, 4)
+	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: "b", Text: "b"})
+	require.Equal(t, *entries[1], sh.Entry{ModeKey: "test", Id: "c", Text: "c"})
+	require.Equal(t, *entries[2], sh.Entry{ModeKey: "test", Id: "a", Text: "a"})
+	require.Equal(t, *entries[3], sh.Entry{ModeKey: "test", Id: "d", Text: "d"})
+}
+
+func TestHistoryDisabledNoImpact(t *testing.T) {
+	workspace := test.SetupWorkspace(t)
+	defer workspace.RemoveWorkspace()
+
+	script := workspace.WriteScript(t, "echo -en \"a\\nb\\nc\\nd\"")
+	m := mockMode(script, "", "test")
+	l := createLauncher(m, workspace.CacheDir, workspace)
+
+	l.historyStore.IncrementEntry("test", []byte("b"))
+	l.historyStore.IncrementEntry("test", []byte("b"))
+	l.historyStore.IncrementEntry("test", []byte("c"))
+
+	entries, err := l.ListEntries("")
+	require.NoError(t, err)
+
+	require.Len(t, entries, 4)
+	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: "a", Text: "a"})
+	require.Equal(t, *entries[1], sh.Entry{ModeKey: "test", Id: "b", Text: "b"})
+	require.Equal(t, *entries[2], sh.Entry{ModeKey: "test", Id: "c", Text: "c"})
+	require.Equal(t, *entries[3], sh.Entry{ModeKey: "test", Id: "d", Text: "d"})
+
+}
+
 func mockMode(scriptName, prefix, key string) []*Mode {
 	noCache := 0
 
@@ -157,8 +203,9 @@ func defaultSearcher(entries []*sh.Entry) (*sh.Entry, error) {
 
 func createLauncher(modes []*Mode, cacheDir string, workspace *test.Workspace) *Launcher {
 	return &Launcher{
-		cache:    &store.CacheStore{Dir: workspace.Dir},
-		modes:    modes,
-		searcher: defaultSearcher,
+		cacheStore:   &store.CacheStore{Dir: workspace.Dir},
+		modes:        modes,
+		searcher:     defaultSearcher,
+		historyStore: &store.HistoryStore{Dir: workspace.Dir},
 	}
 }

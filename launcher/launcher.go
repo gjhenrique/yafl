@@ -14,9 +14,10 @@ var (
 )
 
 type Launcher struct {
-	cache    *store.CacheStore
-	modes    []*Mode
-	searcher func([]*sh.Entry) (*sh.Entry, error)
+	cacheStore   *store.CacheStore
+	historyStore *store.HistoryStore
+	modes        []*Mode
+	searcher     func([]*sh.Entry) (*sh.Entry, error)
 }
 
 func NewLauncher(modes []*Mode, cacheFolder string, searcher func([]*sh.Entry) (*sh.Entry, error)) (*Launcher, error) {
@@ -24,10 +25,15 @@ func NewLauncher(modes []*Mode, cacheFolder string, searcher func([]*sh.Entry) (
 		Dir: cacheFolder,
 	}
 
+	h := store.HistoryStore{
+		Dir: cacheFolder,
+	}
+
 	return &Launcher{
-		cache:    &c,
-		modes:    modes,
-		searcher: searcher,
+		cacheStore:   &c,
+		modes:        modes,
+		searcher:     searcher,
+		historyStore: &h,
 	}, nil
 }
 
@@ -36,7 +42,7 @@ func (l *Launcher) ListEntries(input string) ([]*sh.Entry, error) {
 	if selectedMode == nil {
 		return nil, errors.New("Couldn't find any mode that matches this entry")
 	}
-	return selectedMode.ListEntries(l.cache)
+	return selectedMode.ListEntries(l.historyStore, l.cacheStore)
 }
 
 func (l *Launcher) ProcessEntries(entries []*sh.Entry) error {
