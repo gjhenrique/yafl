@@ -72,6 +72,8 @@ func (l *Launcher) ProcessEntries(entries []*sh.Entry) error {
 		return err
 	}
 
+	l.historyStore.IncrementEntry(m.Key, []byte(entry.Id))
+
 	return nil
 }
 

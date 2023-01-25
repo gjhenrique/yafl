@@ -94,6 +94,31 @@ func TestLaunch(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestLaunchWithHistory(t *testing.T) {
+	workspace := test.SetupWorkspace(t)
+	defer workspace.RemoveWorkspace()
+
+	randomFile := workspace.RandomFile(t)
+	script := workspace.WriteScript(t, fmt.Sprintf("echo -en $1 > %s", randomFile))
+
+	m := mockMode(script, "", "test")
+	m[0].HistoryEnabled = true
+	l := createLauncher(m, workspace.CacheDir, workspace)
+
+	entries := []*sh.Entry{{ModeKey: "test", Id: "b", Text: "b"}}
+	err := l.ProcessEntries(entries)
+	require.NoError(t, err)
+
+	script2 := workspace.WriteScript(t, "echo -en \"a\\nb\\nc\\nd\"")
+	m[0].Exec = fmt.Sprintf("bash %s", script2)
+
+	entries, err = l.ListEntries("")
+	require.NoError(t, err)
+
+	require.Len(t, entries, 4)
+	require.Equal(t, *entries[0], sh.Entry{ModeKey: "test", Id: "b", Text: "b"})
+}
+
 func TestLaunchWithNoMatch(t *testing.T) {
 	workspace := test.SetupWorkspace(t)
 	defer workspace.RemoveWorkspace()
