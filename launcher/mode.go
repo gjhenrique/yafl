@@ -11,7 +11,7 @@ import (
 )
 
 type Mode struct {
-	Cache            *int
+	CacheTime        *int `toml:"cache"`
 	Exec             string
 	Prefix           string
 	Key              string
@@ -24,7 +24,7 @@ const Delimiter byte = 31
 func (m *Mode) ListEntries(historyStore *store.HistoryStore, cache *store.CacheStore) ([]*sh.Entry, error) {
 	cmd := strings.Fields(m.Exec)
 
-	duration := time.Duration(*m.Cache) * time.Second
+	duration := time.Duration(*m.CacheTime) * time.Second
 
 	result, err := cache.FetchCache(m.Key, duration, func() ([]byte, error) {
 		value, err := sh.SpawnSyncProcess(cmd, nil)

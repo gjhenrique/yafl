@@ -28,8 +28,8 @@ func ParseModesFromConfig(configFile string) ([]*Mode, error) {
 		mode := cfg["modes"][k]
 		mode.Key = k
 
-		if mode.Cache == nil {
-			mode.Cache = &defaultCacheTime
+		if mode.CacheTime == nil {
+			mode.CacheTime = &defaultCacheTime
 		}
 
 		// Transforming f into f<space>
@@ -52,7 +52,7 @@ func ParseModesFromConfig(configFile string) ([]*Mode, error) {
 
 	if app == nil {
 		app = &Mode{
-			Cache:          &defaultCacheTime,
+			CacheTime:      &defaultCacheTime,
 			Exec:           fmt.Sprintf("%s apps", bin),
 			Key:            "apps",
 			HistoryEnabled: true,

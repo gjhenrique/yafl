@@ -48,7 +48,7 @@ call_without_match=true`
 	require.Equal(t, modes[0].Prefix, "s ")
 	require.Equal(t, modes[0].Key, "bookmark")
 	require.Equal(t, modes[0].Exec, "ls -lah")
-	require.Equal(t, *modes[0].Cache, 10)
+	require.Equal(t, *modes[0].CacheTime, 10)
 	require.True(t, modes[0].CallWithoutMatch)
 }
 
@@ -70,7 +70,7 @@ exec="ls -lah"`
 	require.Equal(t, modes[0].Prefix, "")
 	require.Equal(t, modes[0].Key, "bookmark")
 	require.Equal(t, modes[0].Exec, "ls -lah")
-	require.Equal(t, *modes[0].Cache, 60)
+	require.Equal(t, *modes[0].CacheTime, 60)
 	require.False(t, modes[0].CallWithoutMatch)
 	require.False(t, modes[0].HistoryEnabled)
 }
@@ -90,12 +90,12 @@ cache=30`
 	require.NoError(t, err)
 	require.Len(t, modes, 1)
 	require.True(t, strings.HasSuffix(modes[0].Exec, "test apps"))
-	require.Equal(t, *modes[0].Cache, 30)
+	require.Equal(t, *modes[0].CacheTime, 30)
 }
 
 func assertAppMode(t *testing.T, mode *Mode) {
 	require.Equal(t, mode.Key, "apps")
-	require.Equal(t, *mode.Cache, *&defaultCacheTime)
+	require.Equal(t, *mode.CacheTime, *&defaultCacheTime)
 	require.True(t, strings.HasSuffix(mode.Exec, " apps"))
 	require.Equal(t, mode.Prefix, "")
 	require.False(t, mode.CallWithoutMatch)

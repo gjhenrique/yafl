@@ -210,10 +210,10 @@ func mockMode(scriptName, prefix, key string) []*Mode {
 
 	return []*Mode{
 		{
-			Cache:  &noCache,
-			Exec:   fmt.Sprintf("bash %s", scriptName),
-			Prefix: prefix,
-			Key:    key,
+			CacheTime: &noCache,
+			Exec:      fmt.Sprintf("bash %s", scriptName),
+			Prefix:    prefix,
+			Key:       key,
 		},
 	}
 }
