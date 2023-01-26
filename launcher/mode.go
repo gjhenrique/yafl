@@ -19,6 +19,8 @@ type Mode struct {
 	HistoryEnabled   bool `toml:"history_enabled"`
 }
 
+const Delimiter byte = 31
+
 func (m *Mode) ListEntries(historyStore *store.HistoryStore, cache *store.CacheStore) ([]*sh.Entry, error) {
 	cmd := strings.Fields(m.Exec)
 
@@ -40,7 +42,7 @@ func (m *Mode) ListEntries(historyStore *store.HistoryStore, cache *store.CacheS
 	entries := make([]*sh.Entry, len(entriesFromCmd))
 
 	for i, r := range entriesFromCmd {
-		splittedEntry := bytes.Split(r, []byte(sh.Delimiter))
+		splittedEntry := bytes.Split(r, []byte{Delimiter})
 
 		text := r
 		id := text

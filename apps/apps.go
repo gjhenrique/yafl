@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"code.rocketnine.space/tslocum/desktop"
-	"github.com/gjhenrique/yafl/sh"
 )
 
 type DesktopEntry struct {
@@ -63,7 +62,7 @@ func applicationNames(entries []*desktop.Entry) string {
 	names := make([]string, len(entries))
 
 	for i, entry := range entries {
-		names[i] = fmt.Sprintf("%s%s%s %s", entry.Name, sh.Delimiter, applicationIcon, applicationName(entry))
+		names[i] = fmt.Sprintf("%s\x1f%s %s", entry.Name, applicationIcon, applicationName(entry))
 	}
 
 	return strings.Join(names, "\n")

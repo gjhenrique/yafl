@@ -11,8 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// How to mock FZF? Inject it
-
 func TestListEntriesWithRawMode(t *testing.T) {
 	workspace := test.SetupWorkspace(t)
 	defer workspace.RemoveWorkspace()
@@ -33,7 +31,8 @@ func TestListEntriesWithDelimiter(t *testing.T) {
 	defer workspace.RemoveWorkspace()
 
 	// We need three inverted backlashes in echo
-	script := workspace.WriteScript(t, fmt.Sprintf("echo -en \"abc\\\\\\%sdef\\nghi\\\\\\%sjkl\"", sh.Delimiter, sh.Delimiter))
+	// \x1f writes the Hex 1f/Decimal 31 into the string
+	script := workspace.WriteScript(t, "echo -en \"abc\x1fdef\\nghi\x1fjkl\"")
 	l := createLauncher(mockMode(script, "", "test"), workspace.CacheDir, workspace)
 
 	entries, err := l.ListEntries([]byte(""))
