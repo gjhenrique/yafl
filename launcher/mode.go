@@ -41,11 +41,15 @@ func (m *Mode) ListEntries(historyStore *store.HistoryStore, cache *store.CacheS
 
 	entries := make([]*sh.Entry, len(entriesFromCmd))
 
+	delimiter := []byte{Delimiter}
 	for i, r := range entriesFromCmd {
-		splittedEntry := bytes.Split(r, []byte{Delimiter})
+		splittedEntry := bytes.Split(r, delimiter)
 
-		text := r
-		id := text
+		text, id := r, r
+		if len(r) == 0 {
+			continue
+		}
+
 		if len(splittedEntry) > 1 {
 			id = splittedEntry[0]
 			text = bytes.Join(splittedEntry[1:], []byte(" "))

@@ -68,6 +68,10 @@ func FormatEntries(entries []*Entry) string {
 	var sb strings.Builder
 
 	for _, e := range entries {
+		if e == nil {
+			continue
+		}
+
 		s := fmt.Sprintf("%s\034%s\034%s\n", e.ModeKey, e.Id, e.Text)
 		sb.WriteString(s)
 	}
