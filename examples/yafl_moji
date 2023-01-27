@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if [ -z $@ ]; then
+    # Remove <small> and </small>
+    ROFI_RETV=0 rofimoji | tail -n +4 | sed "s/<\/*small>//g"
+else
+    ROFI_RETV=0 rofimoji > /dev/null
+    ROFI_RETV=1 rofimoji --skin-tone=neutral --action=type -- "$1"
+fi

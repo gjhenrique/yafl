@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+require "sqlite3"
+require "fileutils"
+
+QUERY=<<SQL
+  WITH RECURSIVE parents(id) AS (
+   SELECT id FROM moz_bookmarks WHERE (type = 2 AND title = 'Work') OR (type = 2 AND title = 'SP')
+   UNION ALL
+   SELECT mb.id FROM moz_bookmarks mb INNER JOIN parents ON mb.parent = parents.id
+  )
+  SELECT DISTINCT mp.url, mb.title FROM moz_bookmarks mb
+   INNER JOIN moz_places mp ON mp.id = mb.fk
+   INNER JOIN parents ON mb.id = parents.id
+   WHERE mb.type = 1 AND mb.title IS NOT NULL
+   ORDER BY mp.frecency DESC
+SQL
+
+if ARGV.length.positive?
+  puts ARGV[0]
+  `firefox --new-tab "#{ARGV[0]}"`
+else
+  ff_dir = Dir["#{Dir.home}/.mozilla/firefox/*.dev-edition-default-*"][0]
+  FileUtils.cp("#{ff_dir}/places.sqlite", "/tmp/places.sqlite")
+  begin
+    FileUtils.cp("#{ff_dir}/places.sqlite-wal", "/tmp/places.sqlite-wal")
+  rescue
+  end
+
+  db = SQLite3::Database.new "/tmp/places.sqlite"
+  db.execute QUERY do |row|
+    puts "#{row[0]}\x1f#{row[1]}"
+  end
+end
