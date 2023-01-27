@@ -16,7 +16,7 @@ type Mode struct {
 	Prefix           string
 	Key              string
 	CallWithoutMatch bool `toml:"call_without_match"`
-	HistoryEnabled   bool `toml:"history_enabled"`
+	HistoryEnabled   bool `toml:"history"`
 }
 
 const Delimiter byte = 31
@@ -74,11 +74,17 @@ func (m *Mode) ListEntries(historyStore *store.HistoryStore, cache *store.CacheS
 		}
 
 		sort.SliceStable(entries, func(i, j int) bool {
+			if entries[i] == nil {
+				return true
+			}
 			posI, ok := historyEntries.FindPosition([]byte(entries[i].Id))
 			if !ok {
 				return false
 			}
 
+			if entries[j] == nil {
+				return false
+			}
 			posJ, ok := historyEntries.FindPosition([]byte(entries[j].Id))
 			if !ok {
 				return true
