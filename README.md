@@ -75,6 +75,14 @@ history = true
 call_without_match = true
 ```
 
+## Building
+
+``` shell
+go build
+# Requires fzf
+./yafl
+```
+
 [fzf]: https://github.com/junegunn/fzf
 [sway-fzf-launcher]: https://github.com/Biont/sway-launcher-desktop
 [rofi]: https://github.com/davatorium/rofi
