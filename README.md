@@ -75,8 +75,6 @@ history = true
 call_without_match = true
 ```
 
-## History Support
-
 [fzf]: https://github.com/junegunn/fzf
 [sway-fzf-launcher]: https://github.com/Biont/sway-launcher-desktop
 [rofi]: https://github.com/davatorium/rofi
