@@ -4,6 +4,11 @@ if [ -z $@ ]; then
     # Remove <small> and </small>
     ROFI_RETV=0 rofimoji | tail -n +4 | sed "s/<\/*small>//g"
 else
-    ROFI_RETV=0 rofimoji > /dev/null
+    # Save the ouput in the cache
+    ROFI_RETV=0 rofimoji
+    # Type the ones that don't require a skin tone
+    ROFI_RETV=1 rofimoji --action=type -- "$1"
+    # --skin-tone only works in the with standalone option, not mode one
+    # This gives an error for emojis that don't have a skin tone; the cache is empty.
     ROFI_RETV=1 rofimoji --skin-tone=neutral --action=type -- "$1"
 fi
