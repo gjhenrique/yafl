@@ -1,16 +1,16 @@
 # yafl (yet another fzf launcher)
 
-yafl combines [sway-fzf-launcher] philosophy with [rofi] script mode.
+yafl combines [sway-launcher-desktop] philosophy with [rofi] script mode.
 
 ![screen](https://s9.gifyu.com/images/recording3.gif)
 
-## Why not rofi or sway-fzf-launcher?
+## Why not rofi or sway-launcher-desktop?
 
 Running rofi on Wayland can be annoying.
 Rarely it crashes the entire desktop because it steals the keyboard and mouse.
 Also, pasting into it from other XWayland apps also doesn't work.
 
-[sway-fzf-launcher] is marvellous because it delegates the display part to a terminal emulator and the search logic to fzf, but it has some downsides.
+sway-launcher-desktop is marvellous because it delegates the display part to a terminal emulator and the search logic to fzf, but it has some downsides.
 First, it's written in awk/bash and supporting modes would be painful to support (at least for my level of experience).
 
 Above all, I used an excuse to write something in Go, so I created `yafl`.
@@ -57,7 +57,7 @@ yafl cache clean mode_key
 
 ## Running on sway
 
-Copied from sway-fzf-launcher:
+Copied from sway-launcher-desktop:
 
 ``` shell
 for_window [app_id="^yafl"] floating enable, sticky enable, resize set 700 px 500 px, border pixel 10
@@ -96,7 +96,7 @@ go build
 [fzf-change-option]: https://github.com/junegunn/fzf/blob/master/ADVANCED.md#switching-between-ripgrep-mode-and-fzf-mode
 [rofimoji]: https://github.com/fdw/rofimoji
 [fzf]: https://github.com/junegunn/fzf
-[sway-fzf-launcher]: https://github.com/Biont/sway-launcher-desktop
+[sway-launcher-desktop]: https://github.com/Biont/sway-launcher-desktop
 [rofi]: https://github.com/davatorium/rofi
 [rofi-script]: https://davatorium.github.io/rofi/current/rofi-script.5/
 [yafl_bookmark]: ./examples/yafl_bookmark
