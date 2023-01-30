@@ -1,6 +1,6 @@
-# yafl
+# yafl (yet another fzf launcher)
 
-yafl (yet another fzflauncher) uses [sway-fzf-launcher] ideas and [rofi] script mode.
+yafl combines [sway-fzf-launcher] philosophy with [rofi] script mode.
 
 ![screen](https://s9.gifyu.com/images/recording3.gif)
 
@@ -8,9 +8,9 @@ yafl (yet another fzflauncher) uses [sway-fzf-launcher] ideas and [rofi] script 
 
 Running rofi on Wayland can be annoying.
 Rarely it crashes the entire desktop because it steals the keyboard and mouse.
-Unfortunately, pasting into it from other XWayland apps also doesn't work.
+Also, pasting into it from other XWayland apps also doesn't work.
 
-[sway-fzf-launcher] is marvellous because it delegates the display part to a terminal emulator and search logic to fzf, but it has some downsides.
+[sway-fzf-launcher] is marvellous because it delegates the display part to a terminal emulator and the search logic to fzf, but it has some downsides.
 First, it's written in awk/bash and supporting modes would be painful to support (at least for my level of experience).
 
 Above all, I used an excuse to write something in Go, so I created `yafl`.
@@ -23,31 +23,41 @@ When that happens, `yafl` invokes the command specified by `exec` option.
 The script should print the entries separated by `\n` in `stdout`.
 `fzf` then displays the entries and you can select some of them. `yafl` will call the **same** cli, but passing the selected entry as an argument now. This "API" is somewhat compatible with [script mode][rofi-script]from rofi. Pretty clever stuff from them 👏!
 
-Additionally, you may delimit the key and value by `\x1f`, like `echo -n key\x1fvalue`.
+Additionally, it's possible to delimit the key and value by `\x1f`, like `echo -n 'key\x1fvalue'`.
 Then, when you select the entry from fzf, `yafl` invokes the script passing the `key` as the first argument.
 
-More examples are in this `examples` directory:
+More examples are in the `examples` directory:
 - [yafl_bookmark]: Lists all the bookmarks of a Firefox installation and opens a new tab whenever you find them
 - [yafl_search]: Search by multiple search engines
 - [yafl_moji]: Wraps [rofimoji] and to list and select emojis
 
 ## How does it activate the modes?
 
-To check which mode _should be activated_ based on the input, it uses the fzf `change:reload` option, i.e. `fzf` invokes `yafl` again **for every keystroke you press**.
+To know which mode _should be activated_ based on the input, it uses the fzf [change:reload][fzf-change-option] option passing `yafl search {input}` as the argument, i.e. `fzf` invokes `yafl search` **for every keystroke you press**.
 
 Yikes. That's slow.
 
 Invoking the mode script every time brings some overhead.
-To solve that, by default, `yafl` caches the mode entries for 60 seconds after one invokes it.
-I couldn't notice any input lags, but YMMV.
+To solve that, by default, `yafl` caches the mode entries for 60 seconds.
+I couldn't notice any input lags on my machine, but YMMV.
 
-Cache invalidation shouldn't be an issue, but you can manually call with:
+<!-- Confusing? Here are the steps: -->
+
+<!-- 1. You invoke `yafl`. It gets all the entries from the `""` string. By default, it's all the applications -->
+<!-- 1. `yafl` calls `fzf` with this input and, most importantly,  with the `change:reload` option passing `yafl search {input}` again -->
+<!-- 1. `fzf` invokes this command for every keystroke -->
+<!-- 1. `yafl search` reads the values from cache if the mode is the same or invokes the entries of another mode if it matches the prefix -->
+<!-- 1. After you select the entry, `yafl` calls the `exec` option of the mode passing the entry as an argument -->
+
+Cache invalidation shouldn't be an issue, but you can manually call it with:
 
 ``` shell
 yafl cache clean mode_key
 ```
 
 ## Running on sway
+
+Copied from sway-fzf-launcher:
 
 ``` shell
 for_window [app_id="^yafl"] floating enable, sticky enable, resize set 700 px 500 px, border pixel 10
@@ -57,7 +67,7 @@ bindsym $mod+d exec $menu
 
 ## Modes API
 
-Create a file in `$HOME/.config/yaml/config.toml` with the following options
+Create a file in `$HOME/.config/yaml/config.toml` with the following options:
 
 ``` toml
 # bookmark is the mode key
@@ -83,6 +93,8 @@ go build
 ./yafl
 ```
 
+[fzf-change-option]: https://github.com/junegunn/fzf/blob/master/ADVANCED.md#switching-between-ripgrep-mode-and-fzf-mode
+[rofimoji]: https://github.com/fdw/rofimoji
 [fzf]: https://github.com/junegunn/fzf
 [sway-fzf-launcher]: https://github.com/Biont/sway-launcher-desktop
 [rofi]: https://github.com/davatorium/rofi
