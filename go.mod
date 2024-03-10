@@ -1,6 +1,6 @@
 module github.com/gjhenrique/yafl
 
-go 1.18
+go 1.21
 
 require (
 	code.rocketnine.space/tslocum/desktop v0.1.5

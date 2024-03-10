@@ -1,0 +1,9 @@
+builds:
+  - goos:
+      - linux
+      - darwin
+
+release:
+  github:
+    owner: gjhenrique
+    name: yafl
