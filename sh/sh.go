@@ -32,7 +32,7 @@ func SpawnAsyncProcess(command []string, options string) error {
 	}
 
 	cmd := exec.Command(command[0], args...)
-
+	cmd.Env = os.Environ()
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setsid:     true,
 		Foreground: false,
