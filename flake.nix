@@ -21,6 +21,9 @@
           packages.default = callPackage ./. {
             inherit (gomod2nix.legacyPackages.${system}) buildGoApplication;
           };
+          packages.yafl_ext = callPackage ./yafl_ext {
+            # inherit (pkgs) ruby;
+          };
           devShells.default = callPackage ./shell.nix {
             inherit (gomod2nix.legacyPackages.${system}) mkGoEnv gomod2nix;
           };
